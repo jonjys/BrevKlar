@@ -6,7 +6,9 @@
 // bor i den här modellen och växer för varje analyserat dokument.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" för lokal utveckling, rhel-targeten för Vercels serverlösa runtime.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
