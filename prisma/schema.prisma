@@ -1,0 +1,257 @@
+// Brevklar datamodell
+// -----------------------------------------------------------------------------
+// Detta är kärnan i plattformen: hur ett myndighetsbrev representeras från
+// uppladdning -> OCR -> klassificering -> AI-analys -> risk -> handlingsplan.
+// Den "tekniska moaten" (dokumenttyper, ärenden, riskmodeller, golden dataset)
+// bor i den här modellen och växer för varje analyserat dokument.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// -----------------------------------------------------------------------------
+// Användare & konton
+// -----------------------------------------------------------------------------
+
+enum UserRole {
+  USER
+  FAMILY_ADMIN // Familjeläge: hanterar dokument åt barn/föräldrar/anhöriga
+  REVIEWER // Mänsklig expert (jurist/handläggare) i feedback-loopen
+  ADMIN
+}
+
+enum SubscriptionPlan {
+  FREE // 5 dokument/månad
+  PREMIUM // Obegränsat, AI Ombud, familjeläge, övervakning
+  B2B // Licens (kommun, fackförbund, redovisningsbyrå ...)
+}
+
+model User {
+  id String @id @default(cuid())
+
+  // BankID är "trust-moaten" – identitet verifieras via svensk e-legitimation.
+  // personalNumberHash lagrar aldrig personnummer i klartext (PII-maskering).
+  bankIdSubject     String?  @unique
+  personalNumberHash String? @unique
+  email             String?  @unique
+  displayName       String?
+
+  role UserRole         @default(USER)
+  plan SubscriptionPlan @default(FREE)
+
+  documents   Document[]
+  feedback    Feedback[]
+  reviews     Feedback[] @relation("ReviewerFeedback")
+  familyLinks FamilyLink[] @relation("FamilyOwner")
+  managedBy   FamilyLink[] @relation("FamilyMember")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([plan])
+}
+
+// Familjeläge: en FAMILY_ADMIN kan hantera dokument åt en anhörig.
+model FamilyLink {
+  id String @id @default(cuid())
+
+  owner   User   @relation("FamilyOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId String
+
+  member   User   @relation("FamilyMember", fields: [memberId], references: [id], onDelete: Cascade)
+  memberId String
+
+  relation String? // t.ex. "förälder", "barn"
+  createdAt DateTime @default(now())
+
+  @@unique([ownerId, memberId])
+}
+
+// -----------------------------------------------------------------------------
+// Ärenden (Brevhistorik) – kopplar samman relaterade dokument
+// -----------------------------------------------------------------------------
+
+model Case {
+  id String @id @default(cuid())
+
+  userId String
+  title  String // t.ex. "Skatteverket – omprövning 2026"
+
+  // Avsändare + valfritt diarienummer/referens som binder ihop dokument.
+  authority     String?
+  referenceCode String?
+
+  documents Document[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// -----------------------------------------------------------------------------
+// Dokument – det centrala objektet
+// -----------------------------------------------------------------------------
+
+enum DocumentStatus {
+  UPLOADED // Filen är mottagen
+  OCR_PENDING // Väntar på textutvinning
+  OCR_DONE // Text extraherad
+  ANALYZING // AI-analys pågår
+  ANALYZED // Klar
+  FAILED
+}
+
+enum DocumentPriority {
+  LOW
+  NORMAL
+  HIGH
+  CRITICAL
+}
+
+model Document {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  case   Case?   @relation(fields: [caseId], references: [id])
+  caseId String?
+
+  // --- Källfil / metadata ---
+  originalFilename String
+  mimeType         String
+  fileSizeBytes    Int?
+  storageKey       String // S3/Supabase-nyckel (krypterad lagring)
+  source           String  @default("upload") // upload | kivra | email | photo
+
+  status DocumentStatus @default(UPLOADED)
+
+  // --- OCR-resultat (steg 2) ---
+  ocrText       String? @db.Text
+  ocrConfidence Float?
+
+  // --- Klassificering (steg 3) ---
+  senderName   String? // identifierad avsändare, t.ex. "Försäkringskassan"
+  documentType String? // t.ex. "Kravbrev", "Skattebeslut", "Begäran om komplettering"
+  priority     DocumentPriority @default(NORMAL)
+
+  // --- Relationer ---
+  analysis  Analysis?
+  deadlines Deadline[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([caseId])
+}
+
+// -----------------------------------------------------------------------------
+// AI-analys – strukturerat resultat (AI svarar alltid i detta format / JSON)
+// -----------------------------------------------------------------------------
+
+enum RiskLevel {
+  LOW // 🟢
+  IMPORTANT // 🟡
+  CRITICAL // 🔴
+}
+
+model Analysis {
+  id String @id @default(cuid())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String   @unique
+
+  // --- AI-förklaring (steg 5) ---
+  summary       String @db.Text // kort sammanfattning, max ~3 meningar
+  plainLanguage String @db.Text // hela förklaringen på enkel svenska
+
+  // Handlingsplan & nästa steg lagras som strukturerad JSON (string[]).
+  actionPlan       Json // [{ "step": "...", "done": false }]
+  consequences     String @db.Text // vad händer om man inte gör något
+  recommendedSteps Json // string[]
+
+  // --- Riskmotor ---
+  riskScore     Int // 0-100
+  riskLevel     RiskLevel
+  riskBreakdown Json // { legal, financial, deadline } 0-100 vardera
+
+  // --- Trust Layer ---
+  confidenceScore  Float // 0-1, hur säker AI:n är
+  uncertainties    Json // string[] – identifierad osäkerhet
+  sourceReferences Json // string[] – källhänvisningar
+  needsHumanReview Boolean @default(false)
+
+  // --- Spårbarhet ---
+  modelId   String // vilken modell som producerade analysen
+  promptVersion String @default("v1")
+
+  feedback Feedback[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([riskLevel])
+}
+
+// -----------------------------------------------------------------------------
+// Deadlines – AI Tidslinje + dokumentövervakning
+// -----------------------------------------------------------------------------
+
+model Deadline {
+  id String @id @default(cuid())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+
+  description String
+  dueDate     DateTime
+  isCompleted Boolean  @default(false)
+  reminderSent Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([dueDate, isCompleted])
+}
+
+// -----------------------------------------------------------------------------
+// Feedback-loop (Human-in-the-loop) – bygger Golden Dataset
+// -----------------------------------------------------------------------------
+
+enum FeedbackStatus {
+  PENDING // Användaren tyckte inte till än
+  AGREED // "Håller med"
+  DISPUTED // "Håller inte med" -> skickas till mänsklig granskning
+  REVIEWED // En REVIEWER har granskat
+}
+
+model Feedback {
+  id String @id @default(cuid())
+
+  analysis   Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  analysisId String
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  agrees  Boolean // svar på "Håller du med om denna tolkning?"
+  comment String? @db.Text
+
+  status FeedbackStatus @default(PENDING)
+
+  // Mänsklig expertgranskning (anonymiserad) som blir träningsdata.
+  reviewer        User?    @relation("ReviewerFeedback", fields: [reviewerId], references: [id])
+  reviewerId      String?
+  correctedOutput Json? // expertens korrigerade analys
+  reviewedAt      DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([status])
+}
