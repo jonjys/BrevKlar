@@ -9,9 +9,25 @@ import {
   PROMPT_VERSION,
   SYSTEM_PROMPT,
 } from './analysis.contract';
+import {
+  assertValidResponseDraft,
+  buildResponseUserPrompt,
+  RESPONSE_JSON_SCHEMA,
+  RESPONSE_PROMPT_VERSION,
+  RESPONSE_SYSTEM_PROMPT,
+  RESPONSE_TYPE_LABELS,
+  ResponseContext,
+  ResponseDraft,
+} from './response.contract';
 
 export interface AnalyzeOutcome {
   result: AnalysisResult;
+  modelId: string;
+  promptVersion: string;
+}
+
+export interface ResponseOutcome {
+  draft: ResponseDraft;
   modelId: string;
   promptVersion: string;
 }
@@ -75,6 +91,39 @@ export class AiService {
     assertValidAnalysis(parsed);
 
     return { result: parsed, modelId: this.model, promptVersion: PROMPT_VERSION };
+  }
+
+  /** AI Svarsgenerator: skapar ett färdigt svarsutkast i strikt JSON. */
+  async generateResponse(ctx: ResponseContext): Promise<ResponseOutcome> {
+    if (!this.client) {
+      return {
+        draft: this.templateResponse(ctx),
+        modelId: 'template-fallback',
+        promptVersion: RESPONSE_PROMPT_VERSION,
+      };
+    }
+
+    const message = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 4000,
+      system: RESPONSE_SYSTEM_PROMPT,
+      ...({
+        output_config: {
+          format: { type: 'json_schema', schema: RESPONSE_JSON_SCHEMA },
+        },
+      } as Record<string, unknown>),
+      messages: [{ role: 'user', content: buildResponseUserPrompt(ctx) }],
+    });
+
+    const text = message.content
+      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+      .map((block) => block.text)
+      .join('');
+
+    const parsed = this.parseJson(text);
+    assertValidResponseDraft(parsed);
+
+    return { draft: parsed, modelId: this.model, promptVersion: RESPONSE_PROMPT_VERSION };
   }
 
   /** Tål att modellen råkar linda svaret i ```json-staket. */
@@ -182,6 +231,72 @@ export class AiService {
         'Överväg mänsklig rådgivning vid viktiga beslut.',
       ],
       sourceReferences: senderName ? [`Avsändare identifierad via nyckelord: ${senderName}`] : [],
+    };
+  }
+
+  /**
+   * Mallbaserat svarsutkast utan LLM. Ger ett giltigt ResponseDraft med
+   * hakparentes-fält som användaren fyller i.
+   */
+  private templateResponse(ctx: ResponseContext): ResponseDraft {
+    const recipient = ctx.senderName ?? '[Myndighet/Avsändare]';
+    const ref = ctx.referenceNumbers[0] ?? '[Diarie-/referensnummer]';
+    const placeholders = ['[Ditt namn]', '[Personnummer]', '[Adress]', '[Datum]'];
+    const label = RESPONSE_TYPE_LABELS[ctx.responseType];
+
+    let opening: string;
+    let middle: string;
+    switch (ctx.responseType) {
+      case 'APPEAL':
+        opening = `Jag överklagar härmed beslutet med referens ${ref}.`;
+        middle = '[Beskriv varför du anser att beslutet är fel]\n\nJag yrkar att beslutet ändras enligt ovan. Observera att överklagandet ska ha kommit in inom överklagandetiden.';
+        placeholders.push('[Beskriv varför du anser att beslutet är fel]');
+        break;
+      case 'EXTENSION_REQUEST':
+        opening = `Jag begär anstånd gällande ärende med referens ${ref}.`;
+        middle = 'Jag ber om förlängd tid till [önskat nytt datum] på grund av [skäl].';
+        placeholders.push('[önskat nytt datum]', '[skäl]');
+        break;
+      case 'COMPLETION_REQUEST':
+        opening = `Detta är komplettering i ärende med referens ${ref}.`;
+        middle = 'Jag bifogar/lämnar följande uppgifter: [beskriv kompletteringen].';
+        placeholders.push('[beskriv kompletteringen]');
+        break;
+      case 'INFO_REQUEST':
+        opening = `Jag har en fråga gällande ärende med referens ${ref}.`;
+        middle = '[Beskriv din fråga].';
+        placeholders.push('[Beskriv din fråga]');
+        break;
+      case 'FORMAL_REPLY':
+      default:
+        opening = `Detta är ett svar gällande ert brev med referens ${ref}.`;
+        middle = '[Skriv ditt svar här].';
+        placeholders.push('[Skriv ditt svar här]');
+        break;
+    }
+
+    const body = [
+      `Till: ${recipient}`,
+      `Datum: [Datum]`,
+      ``,
+      `Ärende: ${label}${ref.startsWith('[') ? '' : `, ref ${ref}`}`,
+      ``,
+      `Hej,`,
+      ``,
+      opening,
+      ``,
+      middle,
+      ``,
+      `Med vänlig hälsning,`,
+      `[Ditt namn]`,
+      `[Personnummer]`,
+      `[Adress]`,
+    ].join('\n');
+
+    return {
+      subject: `${label}${ref.startsWith('[') ? '' : `, ref ${ref}`}`,
+      body,
+      placeholders: Array.from(new Set(placeholders)),
     };
   }
 

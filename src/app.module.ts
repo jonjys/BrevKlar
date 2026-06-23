@@ -6,6 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { DocumentsModule } from './documents/documents.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { ResponsesModule } from './responses/responses.module';
 import { RiskModule } from './risk/risk.module';
 
 @Module({
@@ -17,6 +18,7 @@ import { RiskModule } from './risk/risk.module';
     AuthModule,
     DocumentsModule,
     FeedbackModule,
+    ResponsesModule,
   ],
   controllers: [AppController],
 })
