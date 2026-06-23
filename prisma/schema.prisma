@@ -146,6 +146,7 @@ model Document {
   // --- Relationer ---
   analysis  Analysis?
   deadlines Deadline[]
+  responses GeneratedResponse[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -200,6 +201,39 @@ model Analysis {
   updatedAt DateTime @updatedAt
 
   @@index([riskLevel])
+}
+
+// -----------------------------------------------------------------------------
+// AI Svarsgenerator – färdiga svarsutkast på ett dokument
+// -----------------------------------------------------------------------------
+
+enum ResponseType {
+  FORMAL_REPLY // Formellt svar
+  APPEAL // Överklagande
+  COMPLETION_REQUEST // Begäran om komplettering
+  EXTENSION_REQUEST // Begäran om anstånd
+  INFO_REQUEST // Informationsförfrågan
+}
+
+model GeneratedResponse {
+  id String @id @default(cuid())
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  documentId String
+
+  type    ResponseType
+  subject String
+  body    String   @db.Text
+
+  // Hakparentes-fält användaren måste fylla i ([Ditt namn] osv).
+  placeholders Json
+
+  modelId       String
+  promptVersion String @default("v1")
+
+  createdAt DateTime @default(now())
+
+  @@index([documentId])
 }
 
 // -----------------------------------------------------------------------------

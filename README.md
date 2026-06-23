@@ -126,6 +126,9 @@ curl -XPOST localhost:3000/feedback \
 | `GET /documents/timeline` | AI Tidslinje – kommande deadlines |
 | `GET /documents/:id` | Ett dokument + full analys |
 | `POST /documents/:id/analyze` | Kör om analysen |
+| `POST /documents/:id/responses` | AI Svarsgenerator – skapa svarsutkast (`type`: FORMAL_REPLY / APPEAL / COMPLETION_REQUEST / EXTENSION_REQUEST / INFO_REQUEST) |
+| `GET /documents/:id/responses` | Lista svarsutkast för ett dokument |
+| `GET /responses/:id` | Hämta ett enskilt svarsutkast |
 | `POST /feedback` | "Håller du med om tolkningen?" |
 | `GET /feedback/review-queue` | Granskningskö (REVIEWER/ADMIN) |
 | `POST /feedback/:id/review` | Expert rättar → Golden Dataset |
@@ -136,8 +139,8 @@ curl -XPOST localhost:3000/feedback \
 ## Status & nästa steg
 
 **Byggt nu (Fas 1-kärna):** datamodell, strikt AI-kontrakt + analysmotor,
-riskmotor, BankID-auth, dokument-pipeline, AI Tidslinje, feedback-loop,
-transparens-dashboard, freemium-kvot, enhetstester.
+riskmotor, BankID-auth, dokument-pipeline, AI Tidslinje, **AI Svarsgenerator**,
+feedback-loop, transparens-dashboard, freemium-kvot, enhetstester.
 
 **Implementeras härnäst:**
 
@@ -145,7 +148,6 @@ transparens-dashboard, freemium-kvot, enhetstester.
   för bild & PDF (steg 2).
 - **Strukturerade outputs** – `AiService` skickar redan `output_config.format`
   (JSON-schema) men har också textparsning som skydd för äldre SDK-versioner.
-- **AI Svarsgenerator** – generera överklagande / begäran om anstånd.
 - **Kivra-integration** (suggestion #2) – vidarebeforda/importera PDF:er direkt.
 - **Dokumentövervakning** – cron som skickar deadline-påminnelser (`reminderSent`).
 - **Produktions-BankID** – byt mock mot mTLS mot `BANKID_API_URL`.
