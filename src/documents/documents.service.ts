@@ -78,9 +78,13 @@ export class DocumentsService {
     });
 
     if (!ocr.text) {
-      throw new BadRequestException(
-        'Ingen text kunde extraheras. För bilder/PDF krävs en konfigurerad OCR-motor – ladda upp .txt eller använd /documents/text under utveckling.',
-      );
+      const hint =
+        ocr.method === 'none' && input.mimeType.startsWith('image/')
+          ? 'Sätt ANTHROPIC_API_KEY för att aktivera Claude Vision-OCR för bilder.'
+          : ocr.method === 'none' && input.mimeType === 'application/pdf'
+            ? 'PDF:en verkar vara skannad (ingen inbäddad text). Ladda upp en text-PDF eller använd /documents/text.'
+            : 'Ladda upp .txt eller använd /documents/text under utveckling.';
+      throw new BadRequestException(`Ingen text kunde extraheras. ${hint}`);
     }
 
     return this.analyze(userId, document.id);
