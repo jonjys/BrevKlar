@@ -5,6 +5,15 @@ import { PrismaService } from './prisma/prisma.service';
 export class AppController {
   constructor(private readonly prisma: PrismaService) {}
 
+  @Get()
+  root() {
+    return {
+      service: 'brevklar-backend',
+      version: '0.1.0',
+      endpoints: '/health för status · /stats för transparens-dashboard',
+    };
+  }
+
   @Get('health')
   health() {
     return { status: 'ok', service: 'brevklar-backend' };
