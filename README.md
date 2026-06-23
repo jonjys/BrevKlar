@@ -133,14 +133,19 @@ curl -XPOST localhost:3000/feedback \
 | `GET /feedback/review-queue` | Granskningskö (REVIEWER/ADMIN) |
 | `POST /feedback/:id/review` | Expert rättar → Golden Dataset |
 | `GET /stats` | Publik transparens-dashboard |
+| `GET /cron/reminders` | Vercel Cron – skicka deadline-påminnelser (kräver `CRON_SECRET`) |
+| `POST /cron/reminders` | Manuell trigger av påminnelse-svepet (kräver `CRON_SECRET`) |
+
+Cron-endpointen skyddas av `Authorization: Bearer <CRON_SECRET>`. Lägg till `CRON_SECRET=<valfri-hemlighet>` i Vercel-miljön – saknas den är endpointen stängd.
 
 ---
 
 ## Status & nästa steg
 
-**Byggt nu (Fas 1-kärna):** datamodell, strikt AI-kontrakt + analysmotor,
+**Byggt nu (Fas 1-kärna + Fas 2):** datamodell, strikt AI-kontrakt + analysmotor,
 riskmotor, BankID-auth, dokument-pipeline, AI Tidslinje, **AI Svarsgenerator**,
-feedback-loop, transparens-dashboard, freemium-kvot, enhetstester.
+feedback-loop, transparens-dashboard, freemium-kvot, **Dokumentövervakning**
+(Vercel Cron + deadline-påminnelser), enhetstester.
 
 **Implementeras härnäst:**
 
@@ -148,8 +153,6 @@ feedback-loop, transparens-dashboard, freemium-kvot, enhetstester.
   för bild & PDF (steg 2).
 - **Strukturerade outputs** – `AiService` skickar redan `output_config.format`
   (JSON-schema) men har också textparsning som skydd för äldre SDK-versioner.
-- **Kivra-integration** (suggestion #2) – vidarebeforda/importera PDF:er direkt.
-- **Dokumentövervakning** – cron som skickar deadline-påminnelser (`reminderSent`).
+- **Kivra-integration** – vidarebeforda/importera PDF:er direkt.
+- **E-post/push-påminnelser** – `NotificationService` loggar nu; koppla Postmark/SES för riktiga utskick.
 - **Produktions-BankID** – byt mock mot mTLS mot `BANKID_API_URL`.
-
-Suggestion #1 (feedback-loop) och #3 (transparens-dashboard) finns redan i koden.
