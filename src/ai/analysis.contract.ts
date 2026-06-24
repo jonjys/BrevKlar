@@ -135,6 +135,26 @@ export const ANALYSIS_JSON_SCHEMA = {
 export const PROMPT_VERSION = 'v1';
 
 /**
+ * Språk som Brevklar kan förklara ett brev på. Brevet är på svenska, men
+ * förklaringen kan ges på mottagarens eget språk – kärnan i produkten, eftersom
+ * många som får myndighetsbrev inte har svenska som modersmål.
+ */
+export const SUPPORTED_OUTPUT_LANGUAGES = {
+  sv: 'svenska',
+  en: 'English',
+  ar: 'العربية (arabiska)',
+  so: 'Soomaali (somaliska)',
+  fa: 'فارسی (persiska)',
+  uk: 'українська (ukrainska)',
+} as const;
+
+export type OutputLanguage = keyof typeof SUPPORTED_OUTPUT_LANGUAGES;
+
+export function isSupportedLanguage(lang: string): lang is OutputLanguage {
+  return lang in SUPPORTED_OUTPUT_LANGUAGES;
+}
+
+/**
  * Den extremt strikta system-prompten. Reglerna här är medvetet hårda – stabil
  * JSON-output är ett krav för att appen ska fungera.
  */
@@ -157,8 +177,20 @@ ABSOLUTA REGLER
 11. Hittar på ingenting. Står informationen inte i texten – säg det istället för att gissa.`;
 
 /** Bygger user-meddelandet för en given dokumenttext. */
-export function buildUserPrompt(ocrText: string, todayIso: string): string {
+export function buildUserPrompt(
+  ocrText: string,
+  todayIso: string,
+  targetLanguage: OutputLanguage = 'sv',
+): string {
+  const langName = SUPPORTED_OUTPUT_LANGUAGES[targetLanguage];
+  const languageInstruction =
+    targetLanguage === 'sv'
+      ? 'Skriv all text till användaren på enkel svenska.'
+      : `VIKTIGT: Dokumentet är på svenska, men skriv ALL text till användaren (summary, plainLanguage, actionPlan-steg, consequences, recommendedSteps, uncertainties, sourceReferences) på ${langName}. Behåll dock belopp, datum, myndighetsnamn och referensnummer exakt som de står i originalet. JSON-nycklarna ska vara kvar på engelska enligt schemat.`;
+
   return `Dagens datum är ${todayIso} (använd för att bedöma hur nära deadlines ligger).
+
+${languageInstruction}
 
 Här är dokumentets text:
 """

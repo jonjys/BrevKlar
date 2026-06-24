@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="sv" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brevklar — Förstå dina myndighetsbrev</title>
+    <meta
+      name="description"
+      content="Brevklar översätter svenska myndighetsbrev till vanlig svenska – på ditt språk – med handlingsplan, deadlines och riskbedömning."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📬</text></svg>"
+    />
+  </head>
+  <body>
+    <header class="nav">
+      <a class="brand" href="/">
+        <span class="brand-mark">📬</span>
+        <span class="brand-text">
+          <strong>Brevklar</strong>
+          <small data-i18n="brand_tag">Förstå dina myndighetsbrev</small>
+        </span>
+      </a>
+      <nav class="nav-links">
+        <a href="#how" data-i18n="nav_how">Så funkar det</a>
+        <a href="#demo" data-i18n="nav_demo">Prova nu</a>
+        <select id="lang-picker" class="lang-picker" aria-label="Language"></select>
+      </nav>
+    </header>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-inner">
+          <h1 data-i18n="hero_title">Förstå vilket brev som helst – på ditt språk</h1>
+          <p class="hero-sub" data-i18n="hero_sub"></p>
+          <div class="hero-cta">
+            <a href="#demo" class="btn btn-primary" data-i18n="hero_cta">Prova med ett brev</a>
+            <a href="#how" class="btn btn-ghost" data-i18n="hero_cta2">Så funkar det</a>
+          </div>
+          <div class="badges">
+            <span class="badge">🔐 <span data-i18n="badge_bankid"></span></span>
+            <span class="badge">🗑️ <span data-i18n="badge_nostore"></span></span>
+            <span class="badge">🛡️ <span data-i18n="badge_gdpr"></span></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEMO -->
+      <section id="demo" class="demo">
+        <div class="card">
+          <h2 data-i18n="demo_title">Prova Brevklar</h2>
+          <p class="muted" data-i18n="demo_sub"></p>
+
+          <div class="demo-controls">
+            <label class="field">
+              <span data-i18n="demo_lang_label">Förklara på</span>
+              <select id="output-lang" class="select"></select>
+            </label>
+            <button id="example-btn" class="btn btn-ghost btn-sm" data-i18n="demo_example">
+              Fyll i exempel
+            </button>
+          </div>
+
+          <textarea
+            id="letter-input"
+            class="letter-input"
+            rows="9"
+            data-i18n-ph="demo_placeholder"
+          ></textarea>
+
+          <div class="demo-actions">
+            <button id="analyze-btn" class="btn btn-primary" data-i18n="demo_analyze">
+              Analysera brevet
+            </button>
+          </div>
+
+          <div id="error-box" class="error-box" hidden></div>
+          <div id="result" class="result" hidden></div>
+        </div>
+      </section>
+
+      <!-- HOW IT WORKS -->
+      <section id="how" class="how">
+        <h2 data-i18n="how_title">Så funkar Brevklar</h2>
+        <div class="how-grid">
+          <div class="how-step">
+            <div class="how-icon">📷</div>
+            <h3 data-i18n="how1_t"></h3>
+            <p data-i18n="how1_d"></p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon">💬</div>
+            <h3 data-i18n="how2_t"></h3>
+            <p data-i18n="how2_d"></p>
+          </div>
+          <div class="how-step">
+            <div class="how-icon">✅</div>
+            <h3 data-i18n="how3_t"></h3>
+            <p data-i18n="how3_d"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p data-i18n="footer_note"></p>
+      <p class="muted small">© 2026 Brevklar</p>
+    </footer>
+
+    <script src="/i18n.js"></script>
+    <script src="/app.js"></script>
+  </body>
+</html>

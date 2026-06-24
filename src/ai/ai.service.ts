@@ -6,6 +6,7 @@ import {
   ANALYSIS_JSON_SCHEMA,
   assertValidAnalysis,
   buildUserPrompt,
+  OutputLanguage,
   PROMPT_VERSION,
   SYSTEM_PROMPT,
 } from './analysis.contract';
@@ -57,7 +58,7 @@ export class AiService {
     }
   }
 
-  async analyze(ocrText: string): Promise<AnalyzeOutcome> {
+  async analyze(ocrText: string, targetLanguage: OutputLanguage = 'sv'): Promise<AnalyzeOutcome> {
     const today = new Date().toISOString().slice(0, 10);
 
     if (!this.client) {
@@ -79,7 +80,7 @@ export class AiService {
           format: { type: 'json_schema', schema: ANALYSIS_JSON_SCHEMA },
         },
       } as Record<string, unknown>),
-      messages: [{ role: 'user', content: buildUserPrompt(ocrText, today) }],
+      messages: [{ role: 'user', content: buildUserPrompt(ocrText, today, targetLanguage) }],
     });
 
     const text = message.content

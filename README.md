@@ -16,12 +16,31 @@ tekniska stegen i blueprinten:
 | Lager | Val |
 |------|-----|
 | Backend | NestJS + TypeScript |
+| Webbfrontend | Statisk SPA i `public/` (vanilla JS), flerspråkig (i18n) |
 | Databas | PostgreSQL + Prisma |
 | AI | Claude (Anthropic SDK), strikt JSON-output |
 | Auth | BankID (RP API v6) + JWT |
 | Lagring | Filsystem lokalt → S3/Supabase i produktion |
 
-Frontend (React Native + Expo) byggs i ett separat steg och pratar med detta API.
+En React Native + Expo-app kan byggas separat och prata med samma API.
+
+---
+
+## Webbfrontend (flerspråkig)
+
+Roten `/` serverar en webbapp (`public/`) – landningssida + en **live-demo** där
+man klistrar in ett brev och får det förklarat. Hela gränssnittet OCH AI-förklaringen
+kan visas på mottagarens eget språk, vilket är hela poängen: de flesta som kämpar
+med myndighetsbrev har inte svenska som modersmål.
+
+**Språk:** svenska, English, العربية (RTL), Soomaali, فارسی (RTL), українська.
+
+- `public/i18n.js` – översättningar + språklogik (val sparas, RTL-stöd).
+- `public/app.js` – anropar `POST /demo/analyze` och renderar resultatet.
+- `POST /demo/analyze` `{ text, language }` – publik demo, **ingen inloggning, inget
+  sparas**. Saknas `ANTHROPIC_API_KEY` används heuristisk fallback (på svenska), så
+  sajten fungerar även på en naken deploy. Med API-nyckel förklaras brevet på valt språk.
+- Statiska filer serveras via Nest `useStaticAssets` – inga extra beroenden.
 
 ---
 
