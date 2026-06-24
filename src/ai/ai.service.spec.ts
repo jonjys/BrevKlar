@@ -52,3 +52,25 @@ describe('AiService.generateResponse (template-fallback)', () => {
     expect(draft.body).toContain('[Ditt namn]');
   });
 });
+
+describe('AiService.scanImage (utan API-nyckel)', () => {
+  const service = serviceWithoutKey();
+  const tinyImage =
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
+
+  it('översätt-fallback ber användaren aktivera AI-motorn', async () => {
+    const out = await service.scanImage(tinyImage, 'en', 'translate');
+    expect(out.type).toBe('translate');
+    expect(out.modelId).toBe('heuristic-fallback');
+    if (out.type === 'translate') expect(out.simpleResult).toMatch(/ANTHROPIC_API_KEY/);
+  });
+
+  it('analyze-fallback ger ett giltigt AnalysisResult via heuristiken', async () => {
+    const out = await service.scanImage(tinyImage, 'sv', 'analyze');
+    expect(out.type).toBe('analyze');
+    if (out.type === 'analyze') {
+      expect(out.analysisResult.riskLevel).toBeDefined();
+      expect(out.analysisResult.confidenceScore).toBeGreaterThan(0);
+    }
+  });
+});

@@ -1,4 +1,5 @@
 import { ValidationPipe } from '@nestjs/common';
+import express from 'express';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 
@@ -7,6 +8,10 @@ import { join } from 'path';
  * serverlösa Vercel-handlern (api/index.ts) beter sig exakt likadant.
  */
 export function configureApp(app: NestExpressApplication): void {
+  // Must come before app.init() so our limit wins over NestJS's 100 KB default.
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -20,5 +25,6 @@ export function configureApp(app: NestExpressApplication): void {
 
   // Webbfrontend: serverar public/ (landningssida, demo, i18n). Statiska filer
   // levereras direkt; allt annat faller igenom till API-controllers.
-  app.useStaticAssets(join(process.cwd(), 'public'));
+  // Serve scan.html at /scan (not just /scan.html).
+  app.useStaticAssets(join(process.cwd(), 'public'), { extensions: ['html'] });
 }
