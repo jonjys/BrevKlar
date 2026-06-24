@@ -1,11 +1,11 @@
-/* Brevklar scan flow: language → camera capture → action → AI result. */
+/* Brevklar document intelligence: camera / upload / paste-text → action → result. */
 
-const FLAGS = { sv: '🇸🇪', en: '🇬🇧', ar: '🇸🇦', so: '🇸🇴', fa: '🇮🇷', uk: '🇺🇦' };
-const STEPS = ['lang', 'capture', 'action', 'result'];
+const STEPS = ['input', 'action', 'result'];
 
 const state = {
-  step: 'lang',
-  imageDataUrl: null,
+  step: 'input',
+  inputMode: 'camera', // 'camera' | 'upload' | 'text'
+  inputData: null,     // { type: 'file', fileBase64: '...' } | { type: 'text', textContent: '...' }
   stream: null,
 };
 
@@ -27,37 +27,33 @@ function goStep(step) {
     dot.classList.toggle('active', i === idx);
     dot.classList.toggle('done', i < idx);
   });
-  // Stop the camera as soon as we leave the capture step.
-  if (step !== 'capture') stopCamera();
+  if (step !== 'input' || state.inputMode !== 'camera') stopCamera();
 }
 
-/* ---------- step 1: language ---------- */
-function buildLangGrid() {
-  const grid = document.getElementById('lang-grid');
-  grid.innerHTML = '';
-  Object.keys(I18N).forEach((code) => {
-    const tile = document.createElement('button');
-    tile.className = 'lang-tile';
-    tile.innerHTML = `<span class="lang-flag">${FLAGS[code] || '🌐'}</span>
-      <span class="lang-tile-name">${esc(I18N[code]._name)}</span>`;
-    tile.addEventListener('click', () => {
-      setLang(code);
-      document.getElementById('lang-picker').value = code;
-      goStep('capture');
-      startCamera();
-    });
-    grid.appendChild(tile);
+/* ---------- input mode tabs ---------- */
+function setInputMode(mode) {
+  state.inputMode = mode;
+  document.querySelectorAll('.input-tab').forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.mode === mode);
   });
+  document.querySelectorAll('.input-panel').forEach((panel) => {
+    panel.classList.toggle('active', panel.id === 'panel-' + mode);
+  });
+  if (mode === 'camera') {
+    startCamera();
+  } else {
+    stopCamera();
+  }
 }
 
-/* ---------- step 2: camera ---------- */
+/* ---------- camera ---------- */
 async function startCamera() {
   const video = document.getElementById('camera');
   const fallback = document.getElementById('capture-fallback');
-  fallback.hidden = true;
+  if (fallback) fallback.hidden = true;
 
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-    fallback.hidden = false;
+    if (fallback) fallback.hidden = false;
     return;
   }
   try {
@@ -67,9 +63,8 @@ async function startCamera() {
     });
     video.srcObject = state.stream;
     video.classList.add('live');
-  } catch (e) {
-    fallback.hidden = false;
-    fallback.textContent = t('scan_error_camera');
+  } catch {
+    if (fallback) { fallback.hidden = false; fallback.textContent = t('scan_error_camera'); }
   }
 }
 
@@ -79,15 +74,13 @@ function stopCamera() {
     state.stream = null;
   }
   const video = document.getElementById('camera');
-  video.classList.remove('live');
-  video.srcObject = null;
+  if (video) { video.classList.remove('live'); video.srcObject = null; }
 }
 
 function captureFromVideo() {
   const video = document.getElementById('camera');
-  if (!video.videoWidth) return null;
+  if (!video || !video.videoWidth) return null;
   const canvas = document.getElementById('capture-canvas');
-  // Cap the longest side so the base64 payload stays small.
   const maxSide = 1600;
   const scale = Math.min(1, maxSide / Math.max(video.videoWidth, video.videoHeight));
   canvas.width = Math.round(video.videoWidth * scale);
@@ -96,7 +89,8 @@ function captureFromVideo() {
   return canvas.toDataURL('image/jpeg', 0.8);
 }
 
-function fileToDataUrl(file) {
+/* ---------- file helpers ---------- */
+function compressImageFile(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
@@ -118,34 +112,169 @@ function fileToDataUrl(file) {
   });
 }
 
-function onCaptured(dataUrl) {
-  if (!dataUrl) return;
-  state.imageDataUrl = dataUrl;
-  document.getElementById('preview-img').src = dataUrl;
+function readFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function fileToInputData(file) {
+  if (file.type === 'application/pdf') {
+    const dataUrl = await readFileAsDataUrl(file);
+    return { type: 'file', fileBase64: dataUrl };
+  }
+  const compressed = await compressImageFile(file);
+  return { type: 'file', fileBase64: compressed };
+}
+
+/* ---------- input ready → show action step ---------- */
+function onInputReady(data) {
+  if (!data) return;
+  state.inputData = data;
+
+  const img = document.getElementById('preview-img');
+  const textBadge = document.getElementById('preview-text-badge');
+
+  if (data.type === 'file' && data.fileBase64.startsWith('data:image')) {
+    img.src = data.fileBase64;
+    img.hidden = false;
+    textBadge.hidden = true;
+  } else {
+    img.hidden = true;
+    textBadge.hidden = false;
+    const charsEl = document.getElementById('preview-text-chars');
+    if (charsEl) {
+      const charCount = data.type === 'text'
+        ? data.textContent.length
+        : Math.round(data.fileBase64.length * 0.75 / 1000);
+      charsEl.textContent = data.type === 'text'
+        ? `${charCount} tecken`
+        : 'PDF';
+    }
+  }
+
   goStep('action');
 }
 
-/* ---------- step 3 → 4: analyze ---------- */
+/* ---------- drop zone ---------- */
+function setupDropZone() {
+  const zone = document.getElementById('drop-zone');
+  const fileInput = document.getElementById('file-input');
+  const uploadBtn = document.getElementById('upload-btn');
+
+  uploadBtn.addEventListener('click', () => fileInput.click());
+  zone.addEventListener('click', (e) => {
+    if (e.target === zone || e.target.closest('.drop-zone-icon, .drop-zone-title, .drop-zone-sub')) {
+      fileInput.click();
+    }
+  });
+
+  fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      try {
+        const data = await fileToInputData(file);
+        onInputReady(data);
+      } catch { /* ignore */ }
+      fileInput.value = '';
+    }
+  });
+
+  zone.addEventListener('dragenter', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', (e) => {
+    if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+  });
+  zone.addEventListener('drop', async (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      try {
+        const data = await fileToInputData(file);
+        onInputReady(data);
+      } catch { /* ignore */ }
+    }
+  });
+}
+
+/* ---------- clipboard paste (screenshots anywhere on input step) ---------- */
+function setupPasteCapture() {
+  document.addEventListener('paste', async (e) => {
+    if (state.step !== 'input') return;
+    if (state.inputMode === 'text') return; // let textarea handle it
+
+    const items = e.clipboardData && e.clipboardData.items;
+    if (!items) return;
+
+    for (const item of items) {
+      if (item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) {
+          e.preventDefault();
+          setInputMode('upload');
+          try {
+            const data = await fileToInputData(file);
+            onInputReady(data);
+          } catch { /* ignore */ }
+          break;
+        }
+      }
+    }
+  });
+}
+
+/* ---------- text input ---------- */
+function setupTextInput() {
+  const textarea = document.getElementById('text-input');
+  const goBtn = document.getElementById('text-go-btn');
+  const charCount = document.getElementById('char-count');
+  const MAX = 12000;
+
+  textarea.addEventListener('input', () => {
+    const len = textarea.value.length;
+    charCount.textContent = `${len.toLocaleString()} / ${MAX.toLocaleString()}`;
+    charCount.classList.toggle('over', len > MAX);
+    goBtn.disabled = len < 10 || len > MAX;
+  });
+
+  goBtn.addEventListener('click', () => {
+    const text = textarea.value.trim();
+    if (text.length < 10) return;
+    onInputReady({ type: 'text', textContent: text });
+  });
+}
+
+/* ---------- API call ---------- */
 async function runScan(action) {
   goStep('result');
   document.getElementById('scan-loading').style.display = 'flex';
   document.getElementById('scan-output').hidden = true;
   document.getElementById('result-footer').hidden = true;
 
+  const body = {
+    language: getLang(),
+    action,
+  };
+  if (state.inputData.type === 'file') {
+    body.fileBase64 = state.inputData.fileBase64;
+  } else {
+    body.textContent = state.inputData.textContent;
+  }
+
   try {
     const res = await fetch('/demo/scan', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        imageBase64: state.imageDataUrl,
-        language: getLang(),
-        action,
-      }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     renderScanResult(data);
-  } catch (e) {
+  } catch {
     document.getElementById('scan-output').innerHTML =
       `<div class="error-box">${esc(t('scan_error_api'))}</div>`;
     document.getElementById('scan-output').hidden = false;
@@ -155,22 +284,92 @@ async function runScan(action) {
   }
 }
 
+/* ---------- result renderers ---------- */
 function renderScanResult(data) {
   const out = document.getElementById('scan-output');
+
   if (data.type === 'translate' || data.type === 'explain') {
     const label = data.type === 'translate' ? t('scan_translation_label') : t('scan_explanation_label');
     out.innerHTML = `<div class="simple-result">
       <div class="simple-result-label">${esc(label)}</div>
       <div class="simple-result-text">${esc(data.result)}</div>
     </div>`;
+  } else if (data.type === 'deal') {
+    out.innerHTML = renderDeal(data);
   } else {
     out.innerHTML = renderAnalysis(data);
   }
+
   out.hidden = false;
   out.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* analyze rendering — mirrors app.js renderResult, scoped to scan output */
+function renderDeal(data) {
+  const d = data.dealResult || {};
+  const confPct = Math.round((d.confidence || 0) * 100);
+
+  const altRows = (d.alternatives || []).map((a) => `
+    <div class="deal-alt">
+      <div>
+        <div class="deal-alt-name">${esc(a.name)}</div>
+        <div class="deal-alt-note">${esc(a.note)}</div>
+      </div>
+      <div class="deal-alt-cost">${esc(a.cost)}</div>
+    </div>`).join('');
+
+  const stepRows = (d.actionSteps || []).map((step, i) => `
+    <div class="deal-step">
+      <span class="deal-step-num">${i + 1}</span>
+      <span>${esc(step)}</span>
+    </div>`).join('');
+
+  const currentCostBlock = d.currentCost ? `
+    <div class="deal-block">
+      <h3>${esc(t('deal_current_label'))}</h3>
+      <div class="deal-current-cost">${esc(d.currentCost)}</div>
+      ${d.contractType ? `<div class="deal-contract-type">${esc(d.contractType)}</div>` : ''}
+    </div>` : '';
+
+  const altBlock = altRows ? `
+    <div class="deal-block">
+      <h3>${esc(t('deal_alternatives_label'))}</h3>
+      <div class="deal-alternatives">${altRows}</div>
+    </div>` : '';
+
+  const stepsBlock = stepRows ? `
+    <div class="deal-block">
+      <h3>${esc(t('deal_steps_label'))}</h3>
+      <div class="deal-steps">${stepRows}</div>
+    </div>` : '';
+
+  const negotiateBlock = d.negotiationTip ? `
+    <div class="deal-block">
+      <h3>${esc(t('deal_negotiate_label'))}</h3>
+      <p class="deal-negotiate">${esc(d.negotiationTip)}</p>
+    </div>` : '';
+
+  return `<div class="deal-result">
+    <div class="deal-hero">
+      ${d.provider ? `<div class="deal-provider">${esc(d.provider)}</div>` : ''}
+      ${d.service ? `<div class="deal-service">${esc(d.service)}</div>` : ''}
+      ${d.potentialSaving ? `<div class="deal-saving-badge">⬇ ${esc(d.potentialSaving)}</div>` : ''}
+      <div class="deal-verdict">${esc(d.verdict)}</div>
+    </div>
+    ${currentCostBlock}
+    ${altBlock}
+    ${stepsBlock}
+    ${negotiateBlock}
+    <div class="deal-block">
+      <h3>${esc(t('deal_confidence_label'))}</h3>
+      <div class="deal-confidence-row">
+        <span class="bar"><span style="width:${confPct}%;background:var(--brand-hi)"></span></span>
+        <strong>${confPct}%</strong>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* Mirrors app.js renderResult, scoped to scan output */
 function riskBar(label, value) {
   const color = value >= 70 ? 'var(--red)' : value >= 35 ? 'var(--amber)' : 'var(--green)';
   return `<div class="risk-bar-row">
@@ -184,8 +383,8 @@ function renderAnalysis(data) {
   const r = data.risk;
   const c = data.classification;
   const tags = [];
-  if (c.senderName) tags.push(`<span class="tag">${esc(t('res_sender'))}: ${esc(c.senderName)}</span>`);
-  if (c.documentType) tags.push(`<span class="tag">${esc(t('res_type'))}: ${esc(c.documentType)}</span>`);
+  if (c && c.senderName) tags.push(`<span class="tag">${esc(t('res_sender'))}: ${esc(c.senderName)}</span>`);
+  if (c && c.documentType) tags.push(`<span class="tag">${esc(t('res_type'))}: ${esc(c.documentType)}</span>`);
 
   const actionItems = (data.actionPlan || []).map((a) => a.step);
   const deadlinesHtml = (data.deadlines || []).filter((d) => d.dueDate || d.description).length
@@ -198,7 +397,7 @@ function renderAnalysis(data) {
   return `<div class="result">
     <div class="result-head">
       <div class="tags">${tags.join('')}</div>
-      <span class="risk-pill risk-${esc(r.level)}">${esc(t('risk_' + r.level))} · ${r.score}/100</span>
+      ${r ? `<span class="risk-pill risk-${esc(r.level)}">${esc(t('risk_' + r.level))} · ${r.score}/100</span>` : ''}
     </div>
     <div class="block plain"><h3>${esc(t('res_summary'))}</h3><p>${esc(data.summary)}</p></div>
     <div class="block plain"><h3>${esc(t('res_plain'))}</h3><p>${esc(data.plainLanguage)}</p></div>
@@ -210,15 +409,15 @@ function renderAnalysis(data) {
         : ''
     }
     ${deadlinesHtml}
-    <div class="block">
+    ${r ? `<div class="block">
       <h3>${esc(t('res_risk'))}</h3>
       <div class="risk-bars">
         ${riskBar(t('res_risk_legal'), r.breakdown.legal)}
         ${riskBar(t('res_risk_financial'), r.breakdown.financial)}
         ${riskBar(t('res_risk_deadline'), r.breakdown.deadline)}
       </div>
-      ${r.needsHumanReview ? `<div class="review-flag">⚠️ ${esc(t('res_review'))}</div>` : ''}
-    </div>
+      ${r.needsHumanReview ? `<div class="review-flag">⚠ ${esc(t('res_review'))}</div>` : ''}
+    </div>` : ''}
     ${
       data.consequences
         ? `<div class="block"><h3>${esc(t('res_consequences'))}</h3><p>${esc(data.consequences)}</p></div>`
@@ -249,7 +448,7 @@ function renderAnalysis(data) {
 }
 
 /* ---------- init ---------- */
-function init() {
+function initLangPicker() {
   const picker = document.getElementById('lang-picker');
   Object.keys(I18N).forEach((code) => {
     const opt = document.createElement('option');
@@ -258,35 +457,57 @@ function init() {
     picker.appendChild(opt);
   });
   picker.value = getLang();
-  picker.addEventListener('change', (e) => {
-    setLang(e.target.value);
-    buildLangGrid();
+  picker.addEventListener('change', (e) => setLang(e.target.value));
+}
+
+function init() {
+  initLangPicker();
+  applyTranslations();
+
+  /* Tab switching */
+  document.querySelectorAll('.input-tab').forEach((tab) => {
+    tab.addEventListener('click', () => setInputMode(tab.dataset.mode));
   });
 
-  buildLangGrid();
-
+  /* Camera shutter */
   document.getElementById('shutter-btn').addEventListener('click', () => {
-    onCaptured(captureFromVideo());
+    const dataUrl = captureFromVideo();
+    if (dataUrl) onInputReady({ type: 'file', fileBase64: dataUrl });
   });
-  document.getElementById('file-input').addEventListener('change', async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (file) onCaptured(await fileToDataUrl(file));
-  });
+
+  /* Upload drop zone */
+  setupDropZone();
+
+  /* Clipboard paste */
+  setupPasteCapture();
+
+  /* Text input */
+  setupTextInput();
+
+  /* Retake */
   document.getElementById('retake-btn').addEventListener('click', () => {
-    goStep('capture');
-    startCamera();
+    state.inputData = null;
+    goStep('input');
+    if (state.inputMode === 'camera') startCamera();
   });
+
+  /* Action cards */
   document.querySelectorAll('.action-card').forEach((card) => {
     card.addEventListener('click', () => runScan(card.getAttribute('data-action')));
   });
+
+  /* Scan again */
   document.getElementById('scan-again-btn').addEventListener('click', () => {
-    state.imageDataUrl = null;
-    goStep('capture');
-    startCamera();
+    state.inputData = null;
+    goStep('input');
+    if (state.inputMode === 'camera') startCamera();
   });
 
-  document.addEventListener('langchange', buildLangGrid);
-  applyTranslations();
+  /* Lang change re-applies translations */
+  document.addEventListener('langchange', applyTranslations);
+
+  /* Start camera on default mode */
+  startCamera();
 }
 
 document.addEventListener('DOMContentLoaded', init);

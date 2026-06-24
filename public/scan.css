@@ -1,5 +1,5 @@
 /* ============================================================
-   Brevklar — Scan experience
+   Brevklar — Scan / Document Intelligence experience
    A full-screen, app-like multi-step flow.
    Inherits design tokens from styles.css (:root).
    ============================================================ */
@@ -91,69 +91,68 @@
   width: 100%;
   max-width: 540px;
   margin: 0 auto;
-  padding: 24px 22px 40px;
+  padding: 20px 22px 40px;
   display: flex;
   flex-direction: column;
 }
 .step-inner h1,
 .step-inner h2 {
-  font-size: clamp(26px, 5vw, 34px);
+  font-size: clamp(22px, 5vw, 30px);
   font-weight: 800;
-  letter-spacing: -0.8px;
+  letter-spacing: -0.6px;
   text-align: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .step-sub {
   text-align: center;
   color: var(--text-soft);
-  font-size: 15px;
-  margin-bottom: 30px;
+  font-size: 14px;
+  margin-bottom: 20px;
 }
 
 /* ============================================================
-   STEP 1 — LANGUAGE GRID
+   INPUT MODE TABS
    ============================================================ */
-.lang-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-  margin-top: 8px;
-}
-.lang-tile {
+.input-tabs {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 18px 18px;
+  gap: 6px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  cursor: pointer;
-  transition: border-color 0.18s, transform 0.12s, background 0.18s;
-  text-align: start;
-  font-family: var(--font);
-  color: var(--text);
+  padding: 4px;
+  margin-bottom: 16px;
 }
-.lang-tile:hover {
-  border-color: rgba(59, 130, 246, 0.4);
-  background: var(--surface-2);
-}
-.lang-tile:active { transform: scale(0.97); }
-.lang-tile.selected {
-  border-color: var(--brand-hi);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-.lang-flag {
-  font-size: 26px;
-  line-height: 1;
-  flex-shrink: 0;
-}
-.lang-tile-name {
-  font-size: 16px;
+.input-tab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 8px;
+  border-radius: calc(var(--radius) - 4px);
+  background: none;
+  border: none;
+  color: var(--text-soft);
+  font-size: 13px;
   font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s;
+  font-family: var(--font);
 }
+.input-tab:hover { color: var(--text); background: var(--surface-2); }
+.input-tab.active {
+  background: rgba(37, 99, 235, 0.18);
+  color: var(--brand-hi);
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.3);
+}
+.input-tab svg { flex-shrink: 0; }
+
+/* INPUT PANELS */
+.input-panel { display: none; flex: 1; flex-direction: column; }
+.input-panel.active { display: flex; }
 
 /* ============================================================
-   STEP 2 — CAPTURE
+   CAMERA PANEL
    ============================================================ */
 .capture-stage {
   flex: 1;
@@ -161,8 +160,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 22px 36px;
+  padding: 0 0 24px;
   position: relative;
+  min-height: 320px;
 }
 .camera-feed {
   position: absolute;
@@ -173,26 +173,27 @@
   background: #000;
   opacity: 0;
   transition: opacity 0.5s;
+  border-radius: var(--radius);
 }
 .camera-feed.live { opacity: 1; }
 
 .scan-frame {
   position: relative;
-  width: min(78vw, 380px);
+  width: min(78vw, 340px);
   aspect-ratio: 3 / 4;
-  max-height: 56vh;
+  max-height: 50vh;
   z-index: 2;
 }
 .corner {
   position: absolute;
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
   border: 3px solid #fff;
 }
-.corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 12px 0 0 0; }
-.corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 12px 0 0; }
-.corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 12px; }
-.corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+.corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 10px 0 0 0; }
+.corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 10px 0 0; }
+.corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 10px; }
+.corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 10px 0; }
 
 .scan-laser {
   position: absolute;
@@ -212,51 +213,34 @@
 .capture-hint {
   position: relative;
   z-index: 2;
-  margin-top: 22px;
+  margin-top: 18px;
   color: var(--text);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   text-align: center;
   background: rgba(7, 12, 21, 0.6);
   backdrop-filter: blur(6px);
-  padding: 8px 16px;
+  padding: 7px 14px;
   border-radius: 999px;
 }
 
 .capture-controls {
   position: relative;
   z-index: 3;
-  margin-top: 30px;
+  margin-top: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 36px;
   width: 100%;
-  max-width: 320px;
+  max-width: 280px;
 }
-.icon-btn,
-.icon-btn-spacer {
-  width: 52px;
-  height: 52px;
-  flex-shrink: 0;
-}
-.icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid var(--border-hi);
-  color: var(--text);
-  cursor: pointer;
-  transition: background 0.15s;
-}
-.icon-btn:hover { background: rgba(255, 255, 255, 0.13); }
+.icon-btn-spacer { width: 52px; height: 52px; flex-shrink: 0; }
 
 .shutter-btn {
   position: relative;
-  width: 76px;
-  height: 76px;
+  width: 72px;
+  height: 72px;
   border-radius: 50%;
   border: none;
   background: transparent;
@@ -282,35 +266,137 @@
 .capture-fallback {
   position: relative;
   z-index: 3;
-  margin-top: 18px;
+  margin-top: 16px;
   color: var(--text-soft);
   font-size: 13px;
   text-align: center;
 }
 
 /* ============================================================
-   STEP 3 — ACTION
+   UPLOAD PANEL — DROP ZONE
+   ============================================================ */
+.drop-zone {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 260px;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  text-align: center;
+}
+.drop-zone:hover,
+.drop-zone.drag-over {
+  border-color: rgba(37, 99, 235, 0.6);
+  background: rgba(37, 99, 235, 0.06);
+}
+.drop-zone.drag-over { border-style: solid; box-shadow: 0 0 24px rgba(37, 99, 235, 0.15); }
+
+.drop-zone-icon {
+  width: 68px;
+  height: 68px;
+  border-radius: 18px;
+  background: rgba(37, 99, 235, 0.1);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #93C5FD;
+  margin-bottom: 4px;
+}
+.drop-zone-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.drop-zone-sub {
+  font-size: 13px;
+  color: var(--text-soft);
+  margin-top: -4px;
+}
+
+/* ============================================================
+   TEXT PANEL
+   ============================================================ */
+.text-input-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.text-input {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.65;
+  padding: 16px;
+  resize: vertical;
+  transition: border-color 0.18s;
+  box-sizing: border-box;
+}
+.text-input:focus {
+  outline: none;
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.text-input-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.char-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.char-count.over { color: var(--red); }
+
+/* ============================================================
+   STEP 2 — ACTION
    ============================================================ */
 .preview-thumb {
   position: relative;
-  width: 130px;
-  margin: 0 auto 26px;
+  width: 120px;
+  margin: 0 auto 22px;
 }
 .preview-thumb img {
-  width: 130px;
-  height: 168px;
+  width: 120px;
+  height: 156px;
   object-fit: cover;
   border-radius: var(--radius);
   border: 1px solid var(--border-hi);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
+.preview-text-badge {
+  width: 120px;
+  height: 80px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-soft);
+  font-size: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
 .retake-link {
   display: block;
-  margin: 12px auto 0;
+  margin: 10px auto 0;
   background: none;
   border: none;
   color: var(--brand-hi);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: var(--font);
@@ -319,14 +405,14 @@
 .action-grid {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   margin-top: 8px;
 }
 .action-card {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 18px 20px;
+  gap: 14px;
+  padding: 16px 18px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -342,12 +428,20 @@
 }
 .action-card:active { transform: scale(0.98); }
 .action-card.featured {
-  border-color: rgba(59, 130, 246, 0.3);
+  border-color: rgba(59, 130, 246, 0.35);
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(6, 182, 212, 0.06));
 }
+.action-card.deal-card {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.08), rgba(16, 185, 129, 0.04));
+}
+.action-card.deal-card:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(16, 185, 129, 0.07));
+}
 .action-icon {
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   flex-shrink: 0;
   border-radius: 12px;
   background: rgba(37, 99, 235, 0.12);
@@ -357,34 +451,32 @@
   justify-content: center;
   color: #93C5FD;
 }
+.action-card.deal-card .action-icon,
+.deal-icon {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+  color: #86EFAC;
+}
 .action-text {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
-.action-text strong {
-  font-size: 16px;
-  font-weight: 700;
-}
-.action-text small {
-  font-size: 13px;
-  color: var(--text-soft);
-}
+.action-text strong { font-size: 15px; font-weight: 700; }
+.action-text small { font-size: 12px; color: var(--text-soft); }
 .action-arrow {
   color: var(--text-muted);
-  font-size: 18px;
+  font-size: 17px;
   transition: transform 0.18s, color 0.18s;
 }
-.action-card:hover .action-arrow {
-  color: var(--brand-hi);
-  transform: translateX(3px);
-}
+.action-card:hover .action-arrow { color: var(--brand-hi); transform: translateX(3px); }
+.action-card.deal-card:hover .action-arrow { color: #86EFAC; }
 [dir='rtl'] .action-arrow { transform: scaleX(-1); }
 [dir='rtl'] .action-card:hover .action-arrow { transform: scaleX(-1) translateX(3px); }
 
 /* ============================================================
-   STEP 4 — RESULT
+   STEP 3 — RESULT
    ============================================================ */
 .scan-loading {
   display: flex;
@@ -396,8 +488,8 @@
 }
 .loading-doc {
   position: relative;
-  width: 92px;
-  height: 116px;
+  width: 88px;
+  height: 112px;
   border-radius: 10px;
   background: var(--surface);
   border: 1px solid var(--border-hi);
@@ -406,16 +498,13 @@
 .loading-doc::before {
   content: '';
   position: absolute;
-  left: 16px;
-  right: 16px;
-  top: 20px;
+  left: 14px;
+  right: 14px;
+  top: 18px;
   height: 6px;
   border-radius: 3px;
   background: rgba(255, 255, 255, 0.08);
-  box-shadow:
-    0 16px 0 rgba(255, 255, 255, 0.08),
-    0 32px 0 rgba(255, 255, 255, 0.08),
-    0 48px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 16px 0 rgba(255, 255, 255, 0.08), 0 32px 0 rgba(255, 255, 255, 0.08), 0 48px 0 rgba(255, 255, 255, 0.05);
 }
 .loading-laser {
   position: absolute;
@@ -430,11 +519,7 @@
   0%, 100% { top: 6%; }
   50% { top: 90%; }
 }
-.scan-loading p {
-  color: var(--text-soft);
-  font-size: 15px;
-  font-weight: 500;
-}
+.scan-loading p { color: var(--text-soft); font-size: 15px; font-weight: 500; }
 
 .scan-output {
   display: flex;
@@ -443,7 +528,7 @@
   animation: stepIn 0.4s ease;
 }
 
-/* Simple (translate / explain) result card */
+/* Simple (translate / explain) result */
 .simple-result {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -465,6 +550,141 @@
   white-space: pre-wrap;
 }
 
+/* Deal result */
+.deal-result {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.deal-hero {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(16, 185, 129, 0.06));
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: var(--radius);
+  padding: 24px;
+  text-align: center;
+}
+.deal-provider {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.deal-service {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.deal-saving-badge {
+  display: inline-block;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #86EFAC;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  padding: 10px 24px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+.deal-verdict {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+.deal-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.deal-block h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+.deal-alternatives {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.deal-alt {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface-2);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.deal-alt-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+.deal-alt-note {
+  font-size: 12px;
+  color: var(--text-soft);
+  margin-top: 2px;
+}
+.deal-alt-cost {
+  font-size: 15px;
+  font-weight: 700;
+  color: #86EFAC;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.deal-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.deal-step {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  font-size: 14px;
+  color: var(--text);
+  line-height: 1.5;
+}
+.deal-step-num {
+  width: 22px;
+  height: 22px;
+  background: rgba(37, 99, 235, 0.15);
+  border: 1px solid rgba(37, 99, 235, 0.3);
+  color: var(--brand-hi);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.deal-negotiate {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  font-style: italic;
+}
+.deal-current-cost {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.deal-contract-type {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
 .result-footer {
   margin-top: 24px;
   display: flex;
@@ -479,6 +699,28 @@
   padding-top: 0;
 }
 
+/* Confidence bar (deal) */
+.deal-confidence-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+.deal-confidence-row .bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.deal-confidence-row .bar span {
+  display: block;
+  height: 100%;
+  background: var(--brand-hi);
+  border-radius: 3px;
+}
+
 @media (min-width: 560px) {
-  .lang-grid { grid-template-columns: repeat(3, 1fr); }
+  .input-tabs { gap: 8px; }
+  .input-tab { font-size: 14px; }
 }

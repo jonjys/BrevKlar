@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Brevklar — Skanna</title>
-    <meta name="description" content="Skanna vilket brev eller dokument som helst och få det översatt och förklarat på ditt språk." />
+    <title>Brevklar — Analysera dokument</title>
+    <meta name="description" content="Skanna, ladda upp eller klistra in vilket brev, faktura eller dokument som helst och få det förklarat på ditt språk." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -41,70 +41,132 @@
 
     <!-- STEP DOTS -->
     <div class="step-dots" id="step-dots" aria-hidden="true">
-      <span class="step-dot active" data-step="lang"></span>
-      <span class="step-dot" data-step="capture"></span>
+      <span class="step-dot active" data-step="input"></span>
       <span class="step-dot" data-step="action"></span>
       <span class="step-dot" data-step="result"></span>
     </div>
 
     <main class="scan-main">
-      <!-- STEP 1: LANGUAGE -->
-      <section class="scan-step active" id="step-lang">
+      <!-- STEP 1: INPUT HUB -->
+      <section class="scan-step active" id="step-input">
         <div class="step-inner">
-          <h1 data-i18n="scan_choose_lang">Välj ditt språk</h1>
-          <p class="step-sub" data-i18n="scan_choose_lang_sub"></p>
-          <div class="lang-grid" id="lang-grid"></div>
-        </div>
-      </section>
+          <h1 data-i18n="scan_input_title">Välj dokument</h1>
+          <p class="step-sub" data-i18n="scan_input_sub">Foto, uppladdning, PDF eller inklistrad text</p>
 
-      <!-- STEP 2: CAPTURE -->
-      <section class="scan-step" id="step-capture">
-        <div class="capture-stage">
-          <video id="camera" class="camera-feed" autoplay playsinline muted></video>
-          <canvas id="capture-canvas" hidden></canvas>
-
-          <div class="scan-frame" aria-hidden="true">
-            <span class="corner tl"></span>
-            <span class="corner tr"></span>
-            <span class="corner bl"></span>
-            <span class="corner br"></span>
-            <div class="scan-laser"></div>
-          </div>
-
-          <p class="capture-hint" data-i18n="scan_point_doc"></p>
-
-          <div class="capture-controls">
-            <label class="icon-btn upload-btn" title="Upload">
-              <input type="file" id="file-input" accept="image/*" hidden />
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
-            </label>
-
-            <button class="shutter-btn" id="shutter-btn" aria-label="Capture">
-              <span class="shutter-ring"></span>
-              <span class="shutter-core"></span>
+          <!-- INPUT MODE TABS -->
+          <div class="input-tabs" role="tablist">
+            <button class="input-tab active" id="tab-camera" role="tab" data-mode="camera">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span data-i18n="scan_tab_camera">Kamera</span>
             </button>
-
-            <div class="icon-btn-spacer"></div>
+            <button class="input-tab" id="tab-upload" role="tab" data-mode="upload">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span data-i18n="scan_tab_upload">Ladda upp</span>
+            </button>
+            <button class="input-tab" id="tab-text" role="tab" data-mode="text">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span data-i18n="scan_tab_text">Klistra in</span>
+            </button>
           </div>
 
-          <p class="capture-fallback" id="capture-fallback" hidden data-i18n="scan_no_camera"></p>
+          <!-- CAMERA PANEL -->
+          <div class="input-panel active" id="panel-camera">
+            <div class="capture-stage">
+              <video id="camera" class="camera-feed" autoplay playsinline muted></video>
+              <canvas id="capture-canvas" hidden></canvas>
+              <div class="scan-frame" aria-hidden="true">
+                <span class="corner tl"></span>
+                <span class="corner tr"></span>
+                <span class="corner bl"></span>
+                <span class="corner br"></span>
+                <div class="scan-laser"></div>
+              </div>
+              <p class="capture-hint" data-i18n="scan_point_doc">Rikta mot ett dokument</p>
+              <div class="capture-controls">
+                <div class="icon-btn-spacer"></div>
+                <button class="shutter-btn" id="shutter-btn" aria-label="Capture">
+                  <span class="shutter-ring"></span>
+                  <span class="shutter-core"></span>
+                </button>
+                <div class="icon-btn-spacer"></div>
+              </div>
+              <p class="capture-fallback" id="capture-fallback" hidden data-i18n="scan_no_camera"></p>
+            </div>
+          </div>
+
+          <!-- UPLOAD PANEL -->
+          <div class="input-panel" id="panel-upload">
+            <div class="drop-zone" id="drop-zone">
+              <input type="file" id="file-input" accept="image/*,application/pdf" hidden />
+              <div class="drop-zone-icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <p class="drop-zone-title" data-i18n="scan_drop_zone">Dra hit ett brev, faktura eller skärmdump</p>
+              <p class="drop-zone-sub" data-i18n="scan_drop_sub">Bilder och PDF-filer stöds</p>
+              <button class="btn btn-outline" id="upload-btn" data-i18n="scan_btn_upload">Välj fil</button>
+            </div>
+          </div>
+
+          <!-- TEXT PANEL -->
+          <div class="input-panel" id="panel-text">
+            <div class="text-input-wrap">
+              <textarea
+                id="text-input"
+                class="text-input"
+                rows="9"
+                data-i18n-ph="scan_paste_placeholder"
+                placeholder="Klistra in text från ett brev, faktura eller webbsida..."
+              ></textarea>
+              <div class="text-input-footer">
+                <span class="char-count" id="char-count">0 / 12 000</span>
+                <button class="btn btn-primary" id="text-go-btn" disabled data-i18n="scan_text_go">Fortsätt</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <!-- STEP 3: ACTION -->
+      <!-- STEP 2: ACTION -->
       <section class="scan-step" id="step-action">
         <div class="step-inner">
-          <div class="preview-thumb">
+          <!-- Preview of captured/uploaded input -->
+          <div class="preview-thumb" id="preview-thumb">
             <img id="preview-img" alt="" />
+            <div class="preview-text-badge" id="preview-text-badge" hidden>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <span id="preview-text-chars"></span>
+            </div>
             <button class="retake-link" id="retake-btn" data-i18n="scan_retake">← Ta om</button>
           </div>
 
           <h2 data-i18n="scan_what_todo">Vad vill du göra?</h2>
 
           <div class="action-grid">
+            <button class="action-card featured" data-action="analyze">
+              <span class="action-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+              </span>
+              <span class="action-text">
+                <strong data-i18n="scan_analyze_title">Fullständig analys</strong>
+                <small data-i18n="scan_analyze_desc">Deadlines, åtgärder och risker</small>
+              </span>
+              <span class="action-arrow">→</span>
+            </button>
+
+            <button class="action-card deal-card" data-action="deal">
+              <span class="action-icon deal-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/><path d="M9 3.5A9 9 0 0 1 21 12"/></svg>
+              </span>
+              <span class="action-text">
+                <strong data-i18n="scan_deal_title">Hitta ett bättre avtal</strong>
+                <small data-i18n="scan_deal_desc">Jämför priser och spara pengar</small>
+              </span>
+              <span class="action-arrow">→</span>
+            </button>
+
             <button class="action-card" data-action="translate">
               <span class="action-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 8 6 6" /><path d="m4 14 6-6 2-3" /><path d="M2 5h12" /><path d="M7 2h1" /><path d="m22 22-5-10-5 10" /><path d="M14 18h6" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m5 8 6 6"/><path d="m4 14 6-6 2-3"/><path d="M2 5h12"/><path d="M7 2h1"/><path d="m22 22-5-10-5 10"/><path d="M14 18h6"/></svg>
               </span>
               <span class="action-text">
                 <strong data-i18n="scan_translate_title">Översätt</strong>
@@ -115,7 +177,7 @@
 
             <button class="action-card" data-action="explain">
               <span class="action-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10" /><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </span>
               <span class="action-text">
                 <strong data-i18n="scan_explain_title">Förklara</strong>
@@ -123,25 +185,13 @@
               </span>
               <span class="action-arrow">→</span>
             </button>
-
-            <button class="action-card featured" data-action="analyze">
-              <span class="action-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 3v18h18" /><path d="m19 9-5 5-4-4-3 3" /></svg>
-              </span>
-              <span class="action-text">
-                <strong data-i18n="scan_analyze_title">Fullständig analys</strong>
-                <small data-i18n="scan_analyze_desc">Deadlines, åtgärder och risker</small>
-              </span>
-              <span class="action-arrow">→</span>
-            </button>
           </div>
         </div>
       </section>
 
-      <!-- STEP 4: RESULT -->
+      <!-- STEP 3: RESULT -->
       <section class="scan-step" id="step-result">
         <div class="step-inner">
-          <!-- Loading -->
           <div class="scan-loading" id="scan-loading">
             <div class="loading-doc">
               <div class="loading-laser"></div>
@@ -149,7 +199,6 @@
             <p data-i18n="scan_processing">Analyserar...</p>
           </div>
 
-          <!-- Output -->
           <div id="scan-output" class="scan-output" hidden></div>
 
           <div class="result-footer" id="result-footer" hidden>

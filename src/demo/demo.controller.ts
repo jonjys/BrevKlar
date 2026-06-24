@@ -18,6 +18,11 @@ export class DemoController {
 
   @Post('scan')
   scan(@Body() dto: DemoScanDto) {
-    return this.demo.scan(dto.imageBase64, dto.language ?? 'sv', dto.action ?? 'explain');
+    return this.demo.scan({
+      fileBase64: dto.fileBase64,
+      textContent: dto.textContent,
+      language: dto.language ?? 'sv',
+      action: dto.action ?? 'explain',
+    });
   }
 }

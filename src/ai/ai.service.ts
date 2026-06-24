@@ -34,7 +34,7 @@ export interface ResponseOutcome {
   promptVersion: string;
 }
 
-export type ScanAction = 'translate' | 'explain' | 'analyze';
+export type ScanAction = 'translate' | 'explain' | 'analyze' | 'deal';
 
 export interface ScanSimpleOutcome {
   type: 'translate' | 'explain';
@@ -51,7 +51,79 @@ export interface ScanAnalyzeOutcome {
   promptVersion: string;
 }
 
-export type ScanOutcome = ScanSimpleOutcome | ScanAnalyzeOutcome;
+export interface DealAlternative {
+  name: string;
+  cost: string;
+  note: string;
+}
+
+export interface DealResult {
+  provider: string | null;
+  service: string | null;
+  currentCost: string | null;
+  contractType: string | null;
+  expiryDate: string | null;
+  verdict: string;
+  alternatives: DealAlternative[];
+  potentialSaving: string | null;
+  actionSteps: string[];
+  negotiationTip: string | null;
+  confidence: number;
+}
+
+export interface ScanDealOutcome {
+  type: 'deal';
+  extractedText: string;
+  dealResult: DealResult;
+  modelId: string;
+}
+
+export type ScanOutcome = ScanSimpleOutcome | ScanAnalyzeOutcome | ScanDealOutcome;
+
+const DEAL_SYSTEM_PROMPT = `Du är en svensk konsumentrådgivare som hjälper människor att hitta bättre avtal på räkningar, abonnemang och tjänster.
+
+Analysera det angivna dokumentet (faktura, abonnemangsbekräftelse, avtal, elräkning, försäkringsbrev eller liknande). Extrahera faktureringsinformation och:
+1. Identifiera leverantör/företag och tjänstetyp
+2. Bedöm om priset är konkurrenskraftigt på den svenska marknaden just nu
+3. Föreslå 2–3 konkreta billigare alternativ (verkliga företag som verkar i Sverige)
+4. Ge specifika steg-för-steg-instruktioner för att byta, säga upp eller förhandla
+5. Uppskatta realistiska månatliga besparingar i SEK
+
+Svara ENBART med giltig JSON enligt schemat. Ingen text före eller efter. Inga markdown-staket.`;
+
+const DEAL_JSON_SCHEMA = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    provider: { type: ['string', 'null'] },
+    service: { type: ['string', 'null'] },
+    currentCost: { type: ['string', 'null'] },
+    contractType: { type: ['string', 'null'] },
+    expiryDate: { type: ['string', 'null'] },
+    verdict: { type: 'string' },
+    alternatives: {
+      type: 'array',
+      items: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          name: { type: 'string' },
+          cost: { type: 'string' },
+          note: { type: 'string' },
+        },
+        required: ['name', 'cost', 'note'],
+      },
+    },
+    potentialSaving: { type: ['string', 'null'] },
+    actionSteps: { type: 'array', items: { type: 'string' } },
+    negotiationTip: { type: ['string', 'null'] },
+    confidence: { type: 'number' },
+  },
+  required: [
+    'provider', 'service', 'currentCost', 'contractType', 'expiryDate',
+    'verdict', 'alternatives', 'potentialSaving', 'actionSteps', 'negotiationTip', 'confidence',
+  ],
+} as const;
 
 /**
  * AnalysmotorN. Skickar OCR-text till Claude och tvingar fram ett strukturerat
@@ -147,9 +219,103 @@ export class AiService {
     return { draft: parsed, modelId: this.model, promptVersion: RESPONSE_PROMPT_VERSION };
   }
 
+  /** Analyserar ett dokument för att hitta ett bättre avtal/pris. */
+  async analyzeForDeal(text: string, language: OutputLanguage = 'sv'): Promise<ScanDealOutcome> {
+    if (!this.client) {
+      return {
+        type: 'deal',
+        extractedText: text,
+        dealResult: this.templateDeal(),
+        modelId: 'heuristic-fallback',
+      };
+    }
+
+    const langName = SUPPORTED_OUTPUT_LANGUAGES[language];
+    const langInstruction =
+      language === 'sv'
+        ? 'Skriv alla texter (verdict, actionSteps, negotiationTip, alternatives[].note) på svenska.'
+        : `Skriv alla texter (verdict, actionSteps, negotiationTip, alternatives[].note) på ${langName}. Behåll leverantörsnamn, belopp och produktnamn som de är.`;
+
+    const userPrompt = `${langInstruction}
+
+Här är dokumentets text:
+"""
+${text}
+"""
+
+Analysera och svara med ENBART JSON enligt schemat.`;
+
+    const message = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 3000,
+      system: DEAL_SYSTEM_PROMPT,
+      ...({
+        output_config: {
+          format: { type: 'json_schema', schema: DEAL_JSON_SCHEMA },
+        },
+      } as Record<string, unknown>),
+      messages: [{ role: 'user', content: userPrompt }],
+    });
+
+    const raw = message.content
+      .filter((block): block is Anthropic.TextBlock => block.type === 'text')
+      .map((block) => block.text)
+      .join('');
+
+    const parsed = this.parseJson(raw) as DealResult;
+
+    return { type: 'deal', extractedText: text, dealResult: parsed, modelId: this.model };
+  }
+
   /**
-   * Skannar en bild via Claude Vision och returnerar översättning, förklaring
-   * eller en fullständig AnalysisResult beroende på action-parametern.
+   * Kör AI-analys direkt på råtext (inga bilder). Täcker alla fyra ScanAction-varianter.
+   * Används när indata är inklistrad text eller extraherad PDF-text.
+   */
+  async scanText(
+    text: string,
+    language: OutputLanguage = 'sv',
+    action: ScanAction = 'explain',
+  ): Promise<ScanOutcome> {
+    if (action === 'analyze') {
+      const { result, modelId, promptVersion } = await this.analyze(text, language);
+      return { type: 'analyze', extractedText: text, analysisResult: result, modelId, promptVersion };
+    }
+
+    if (action === 'deal') {
+      return this.analyzeForDeal(text, language);
+    }
+
+    if (!this.client) {
+      const msg =
+        action === 'translate'
+          ? `Översättning kräver AI-motorn (ANTHROPIC_API_KEY). Aktivera den för att använda den här funktionen.`
+          : `Förklaring kräver AI-motorn (ANTHROPIC_API_KEY). Aktivera den för att använda den här funktionen.`;
+      return { type: action, extractedText: text, simpleResult: msg, modelId: 'heuristic-fallback' };
+    }
+
+    const langName = SUPPORTED_OUTPUT_LANGUAGES[language];
+    const prompt =
+      action === 'translate'
+        ? `Translate the following text to ${langName}. Return only the translation, preserving structure and line breaks.\n\n${text}`
+        : `Read the following text and write a clear, plain-language explanation in ${langName} of what it says and what the reader needs to do. Be concise and use simple language.\n\n${text}`;
+
+    const msg = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }],
+    });
+
+    const simpleResult = msg.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+
+    return { type: action as 'translate' | 'explain', extractedText: text, simpleResult, modelId: this.model };
+  }
+
+  /**
+   * Skannar en bild via Claude Vision och returnerar översättning, förklaring,
+   * fullständig AnalysisResult eller en deal-analys beroende på action.
    */
   async scanImage(
     imageBase64: string,
@@ -168,6 +334,9 @@ export class AiService {
           modelId: 'heuristic-fallback',
           promptVersion: PROMPT_VERSION,
         };
+      }
+      if (action === 'deal') {
+        return { type: 'deal', extractedText: '', dealResult: this.templateDeal(), modelId: 'heuristic-fallback' };
       }
       return {
         type: action as 'translate' | 'explain',
@@ -210,7 +379,7 @@ export class AiService {
       return { type: action, extractedText: '', simpleResult, modelId: this.model };
     }
 
-    // action === 'analyze': extract text first, then run full analysis pipeline
+    // analyze or deal: extract text first, then run full pipeline
     const extractMsg = await this.client.messages.create({
       model: this.model,
       max_tokens: 4000,
@@ -232,6 +401,11 @@ export class AiService {
       .filter((b): b is Anthropic.TextBlock => b.type === 'text')
       .map((b) => b.text)
       .join('');
+
+    if (action === 'deal') {
+      const dealOutcome = await this.analyzeForDeal(extractedText, language);
+      return { ...dealOutcome, extractedText };
+    }
 
     const { result: analysisResult, modelId, promptVersion } = await this.analyze(
       extractedText,
@@ -346,6 +520,24 @@ export class AiService {
         'Överväg mänsklig rådgivning vid viktiga beslut.',
       ],
       sourceReferences: senderName ? [`Avsändare identifierad via nyckelord: ${senderName}`] : [],
+    };
+  }
+
+  /** Mallbaserat deal-resultat utan LLM (visas när API-nyckel saknas). */
+  private templateDeal(): DealResult {
+    return {
+      provider: null,
+      service: null,
+      currentCost: null,
+      contractType: null,
+      expiryDate: null,
+      verdict:
+        'Deal-analysen kräver AI-motorn (ANTHROPIC_API_KEY). Aktivera den för att se om du kan spara pengar.',
+      alternatives: [],
+      potentialSaving: null,
+      actionSteps: ['Aktivera AI-motorn (ANTHROPIC_API_KEY) för en fullständig deal-analys.'],
+      negotiationTip: null,
+      confidence: 0,
     };
   }
 

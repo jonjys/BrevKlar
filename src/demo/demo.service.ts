@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { AiService, ScanAction } from '../ai/ai.service';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { AiService, ScanAction, ScanOutcome } from '../ai/ai.service';
 import { OutputLanguage } from '../ai/analysis.contract';
 import { RiskService } from '../risk/risk.service';
 
@@ -53,9 +53,43 @@ export class DemoService {
     };
   }
 
-  async scan(imageBase64: string, language: OutputLanguage, action: ScanAction) {
-    const outcome = await this.ai.scanImage(imageBase64, language, action);
+  async scan(dto: {
+    fileBase64?: string;
+    textContent?: string;
+    language: OutputLanguage;
+    action: ScanAction;
+  }) {
+    const { language, action } = dto;
 
+    if (!dto.fileBase64 && !dto.textContent) {
+      throw new BadRequestException('Ange antingen fileBase64 eller textContent.');
+    }
+
+    let outcome: ScanOutcome;
+
+    if (dto.fileBase64) {
+      if (dto.fileBase64.startsWith('data:application/pdf')) {
+        // PDF: extrahera text med pdf-parse och kör textbaserad analys
+        const base64Data = dto.fileBase64.split(',')[1];
+        const buffer = Buffer.from(base64Data, 'base64');
+        // Lazy require for tree-shaking and to avoid issues in edge runtimes.
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        const pdfParse = require('pdf-parse') as (buf: Buffer) => Promise<{ text: string }>;
+        const pdfData = await pdfParse(buffer);
+        outcome = await this.ai.scanText(pdfData.text, language, action);
+      } else {
+        // Bild: skicka till Claude Vision
+        outcome = await this.ai.scanImage(dto.fileBase64, language, action);
+      }
+    } else {
+      // Råtext inklistrad av användaren
+      outcome = await this.ai.scanText(dto.textContent!, language, action);
+    }
+
+    return this.formatOutcome(outcome, language);
+  }
+
+  private formatOutcome(outcome: ScanOutcome, language: OutputLanguage) {
     if (outcome.type === 'analyze') {
       const assessment = this.risk.assess(outcome.analysisResult);
       const r = outcome.analysisResult;
@@ -86,6 +120,15 @@ export class DemoService {
           uncertainties: r.uncertainties,
           sourceReferences: r.sourceReferences,
         },
+        meta: { modelId: outcome.modelId, language, demo: true, scan: true },
+      };
+    }
+
+    if (outcome.type === 'deal') {
+      return {
+        type: 'deal',
+        extractedText: outcome.extractedText,
+        dealResult: outcome.dealResult,
         meta: { modelId: outcome.modelId, language, demo: true, scan: true },
       };
     }
