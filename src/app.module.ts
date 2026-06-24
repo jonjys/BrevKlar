@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AiModule } from './ai/ai.module';
 import { AuthModule } from './auth/auth.module';
+import { DemoModule } from './demo/demo.module';
 import { DocumentsModule } from './documents/documents.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { MonitoringModule } from './monitoring/monitoring.module';
@@ -21,6 +22,7 @@ import { RiskModule } from './risk/risk.module';
     FeedbackModule,
     ResponsesModule,
     MonitoringModule,
+    DemoModule,
   ],
   controllers: [AppController],
 })
