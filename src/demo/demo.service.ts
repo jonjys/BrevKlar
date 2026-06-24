@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AiService } from '../ai/ai.service';
+import { AiService, ScanAction } from '../ai/ai.service';
 import { OutputLanguage } from '../ai/analysis.contract';
 import { RiskService } from '../risk/risk.service';
 
@@ -50,6 +50,51 @@ export class DemoService {
         language,
         demo: true,
       },
+    };
+  }
+
+  async scan(imageBase64: string, language: OutputLanguage, action: ScanAction) {
+    const outcome = await this.ai.scanImage(imageBase64, language, action);
+
+    if (outcome.type === 'analyze') {
+      const assessment = this.risk.assess(outcome.analysisResult);
+      const r = outcome.analysisResult;
+      return {
+        type: 'analyze',
+        extractedText: outcome.extractedText,
+        classification: {
+          senderName: r.senderName,
+          documentType: r.documentType,
+          priority: r.priority,
+        },
+        summary: r.summary,
+        plainLanguage: r.plainLanguage,
+        actionPlan: r.actionPlan,
+        consequences: r.consequences,
+        recommendedSteps: r.recommendedSteps,
+        deadlines: r.deadlines,
+        amounts: r.amounts,
+        referenceNumbers: r.referenceNumbers,
+        risk: {
+          score: assessment.score,
+          level: assessment.level,
+          breakdown: assessment.breakdown,
+          needsHumanReview: assessment.needsHumanReview,
+        },
+        trust: {
+          confidenceScore: r.confidenceScore,
+          uncertainties: r.uncertainties,
+          sourceReferences: r.sourceReferences,
+        },
+        meta: { modelId: outcome.modelId, language, demo: true, scan: true },
+      };
+    }
+
+    return {
+      type: outcome.type,
+      extractedText: outcome.extractedText,
+      result: outcome.simpleResult,
+      meta: { modelId: outcome.modelId, language, demo: true, scan: true },
     };
   }
 }

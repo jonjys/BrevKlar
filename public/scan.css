@@ -1,0 +1,484 @@
+/* ============================================================
+   Brevklar — Scan experience
+   A full-screen, app-like multi-step flow.
+   Inherits design tokens from styles.css (:root).
+   ============================================================ */
+
+.scan-body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  position: relative;
+}
+
+.scan-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.scan-bg .glow-1 {
+  top: -300px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.scan-bg .glow-2 {
+  bottom: -200px;
+  left: -100px;
+}
+
+/* TOP BAR */
+.scan-top {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 22px;
+}
+
+/* STEP DOTS */
+.step-dots {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 8px;
+}
+.step-dot {
+  width: 28px;
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  transition: background 0.35s, width 0.35s;
+}
+.step-dot.active {
+  background: var(--brand-hi);
+  width: 38px;
+  box-shadow: 0 0 12px var(--brand-glow);
+}
+.step-dot.done {
+  background: rgba(59, 130, 246, 0.45);
+}
+
+/* STEP LAYOUT */
+.scan-main {
+  position: relative;
+  z-index: 5;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+.scan-step {
+  display: none;
+  flex: 1;
+  flex-direction: column;
+  animation: stepIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.scan-step.active {
+  display: flex;
+}
+@keyframes stepIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.step-inner {
+  width: 100%;
+  max-width: 540px;
+  margin: 0 auto;
+  padding: 24px 22px 40px;
+  display: flex;
+  flex-direction: column;
+}
+.step-inner h1,
+.step-inner h2 {
+  font-size: clamp(26px, 5vw, 34px);
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  text-align: center;
+  margin-bottom: 8px;
+}
+.step-sub {
+  text-align: center;
+  color: var(--text-soft);
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+/* ============================================================
+   STEP 1 — LANGUAGE GRID
+   ============================================================ */
+.lang-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 8px;
+}
+.lang-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 18px 18px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.12s, background 0.18s;
+  text-align: start;
+  font-family: var(--font);
+  color: var(--text);
+}
+.lang-tile:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: var(--surface-2);
+}
+.lang-tile:active { transform: scale(0.97); }
+.lang-tile.selected {
+  border-color: var(--brand-hi);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+.lang-flag {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.lang-tile-name {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* ============================================================
+   STEP 2 — CAPTURE
+   ============================================================ */
+.capture-stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 22px 36px;
+  position: relative;
+}
+.camera-feed {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.5s;
+}
+.camera-feed.live { opacity: 1; }
+
+.scan-frame {
+  position: relative;
+  width: min(78vw, 380px);
+  aspect-ratio: 3 / 4;
+  max-height: 56vh;
+  z-index: 2;
+}
+.corner {
+  position: absolute;
+  width: 34px;
+  height: 34px;
+  border: 3px solid #fff;
+}
+.corner.tl { top: 0; left: 0; border-right: none; border-bottom: none; border-radius: 12px 0 0 0; }
+.corner.tr { top: 0; right: 0; border-left: none; border-bottom: none; border-radius: 0 12px 0 0; }
+.corner.bl { bottom: 0; left: 0; border-right: none; border-top: none; border-radius: 0 0 0 12px; }
+.corner.br { bottom: 0; right: 0; border-left: none; border-top: none; border-radius: 0 0 12px 0; }
+
+.scan-laser {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 2px;
+  top: 0;
+  background: linear-gradient(90deg, transparent, var(--brand-hi), transparent);
+  box-shadow: 0 0 16px 2px var(--brand-glow);
+  animation: laser 2.6s ease-in-out infinite;
+}
+@keyframes laser {
+  0%, 100% { top: 4%; opacity: 0.4; }
+  50% { top: 94%; opacity: 1; }
+}
+
+.capture-hint {
+  position: relative;
+  z-index: 2;
+  margin-top: 22px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  background: rgba(7, 12, 21, 0.6);
+  backdrop-filter: blur(6px);
+  padding: 8px 16px;
+  border-radius: 999px;
+}
+
+.capture-controls {
+  position: relative;
+  z-index: 3;
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  width: 100%;
+  max-width: 320px;
+}
+.icon-btn,
+.icon-btn-spacer {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+}
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--border-hi);
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.icon-btn:hover { background: rgba(255, 255, 255, 0.13); }
+
+.shutter-btn {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.shutter-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 4px solid #fff;
+}
+.shutter-core {
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.12s, background 0.12s;
+}
+.shutter-btn:hover .shutter-core { background: var(--brand-hi); }
+.shutter-btn:active .shutter-core { transform: scale(0.86); }
+
+.capture-fallback {
+  position: relative;
+  z-index: 3;
+  margin-top: 18px;
+  color: var(--text-soft);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ============================================================
+   STEP 3 — ACTION
+   ============================================================ */
+.preview-thumb {
+  position: relative;
+  width: 130px;
+  margin: 0 auto 26px;
+}
+.preview-thumb img {
+  width: 130px;
+  height: 168px;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-hi);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5);
+}
+.retake-link {
+  display: block;
+  margin: 12px auto 0;
+  background: none;
+  border: none;
+  color: var(--brand-hi);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font);
+}
+
+.action-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.action-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: border-color 0.18s, transform 0.12s, background 0.18s;
+  text-align: start;
+  font-family: var(--font);
+  color: var(--text);
+}
+.action-card:hover {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: var(--surface-2);
+}
+.action-card:active { transform: scale(0.98); }
+.action-card.featured {
+  border-color: rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(6, 182, 212, 0.06));
+}
+.action-icon {
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
+  border-radius: 12px;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #93C5FD;
+}
+.action-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.action-text strong {
+  font-size: 16px;
+  font-weight: 700;
+}
+.action-text small {
+  font-size: 13px;
+  color: var(--text-soft);
+}
+.action-arrow {
+  color: var(--text-muted);
+  font-size: 18px;
+  transition: transform 0.18s, color 0.18s;
+}
+.action-card:hover .action-arrow {
+  color: var(--brand-hi);
+  transform: translateX(3px);
+}
+[dir='rtl'] .action-arrow { transform: scaleX(-1); }
+[dir='rtl'] .action-card:hover .action-arrow { transform: scaleX(-1) translateX(3px); }
+
+/* ============================================================
+   STEP 4 — RESULT
+   ============================================================ */
+.scan-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  padding: 70px 0;
+}
+.loading-doc {
+  position: relative;
+  width: 92px;
+  height: 116px;
+  border-radius: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  overflow: hidden;
+}
+.loading-doc::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 20px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 16px 0 rgba(255, 255, 255, 0.08),
+    0 32px 0 rgba(255, 255, 255, 0.08),
+    0 48px 0 rgba(255, 255, 255, 0.05);
+}
+.loading-laser {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--brand-hi), transparent);
+  box-shadow: 0 0 14px 2px var(--brand-glow);
+  animation: laser-doc 1.3s ease-in-out infinite;
+}
+@keyframes laser-doc {
+  0%, 100% { top: 6%; }
+  50% { top: 90%; }
+}
+.scan-loading p {
+  color: var(--text-soft);
+  font-size: 15px;
+  font-weight: 500;
+}
+
+.scan-output {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: stepIn 0.4s ease;
+}
+
+/* Simple (translate / explain) result card */
+.simple-result {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+}
+.simple-result-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--brand-hi);
+  margin-bottom: 14px;
+}
+.simple-result-text {
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text);
+  white-space: pre-wrap;
+}
+
+.result-footer {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+.result-footer .btn { width: 100%; max-width: 320px; }
+
+/* Reuse landing result blocks inside scan output */
+.scan-output .result {
+  margin-top: 0;
+  border-top: none;
+  padding-top: 0;
+}
+
+@media (min-width: 560px) {
+  .lang-grid { grid-template-columns: repeat(3, 1fr); }
+}

@@ -8,6 +8,7 @@ import {
   buildUserPrompt,
   OutputLanguage,
   PROMPT_VERSION,
+  SUPPORTED_OUTPUT_LANGUAGES,
   SYSTEM_PROMPT,
 } from './analysis.contract';
 import {
@@ -32,6 +33,25 @@ export interface ResponseOutcome {
   modelId: string;
   promptVersion: string;
 }
+
+export type ScanAction = 'translate' | 'explain' | 'analyze';
+
+export interface ScanSimpleOutcome {
+  type: 'translate' | 'explain';
+  extractedText: string;
+  simpleResult: string;
+  modelId: string;
+}
+
+export interface ScanAnalyzeOutcome {
+  type: 'analyze';
+  extractedText: string;
+  analysisResult: AnalysisResult;
+  modelId: string;
+  promptVersion: string;
+}
+
+export type ScanOutcome = ScanSimpleOutcome | ScanAnalyzeOutcome;
 
 /**
  * AnalysmotorN. Skickar OCR-text till Claude och tvingar fram ett strukturerat
@@ -125,6 +145,100 @@ export class AiService {
     assertValidResponseDraft(parsed);
 
     return { draft: parsed, modelId: this.model, promptVersion: RESPONSE_PROMPT_VERSION };
+  }
+
+  /**
+   * Skannar en bild via Claude Vision och returnerar översättning, förklaring
+   * eller en fullständig AnalysisResult beroende på action-parametern.
+   */
+  async scanImage(
+    imageBase64: string,
+    language: OutputLanguage = 'sv',
+    action: ScanAction = 'explain',
+  ): Promise<ScanOutcome> {
+    if (!this.client) {
+      if (action === 'analyze') {
+        return {
+          type: 'analyze',
+          extractedText: '',
+          analysisResult: this.heuristicFallback(
+            '[Bildskanning utan API-nyckel — begränsad analys]',
+            new Date().toISOString().slice(0, 10),
+          ),
+          modelId: 'heuristic-fallback',
+          promptVersion: PROMPT_VERSION,
+        };
+      }
+      return {
+        type: action as 'translate' | 'explain',
+        extractedText: '',
+        simpleResult:
+          'Bildskanning kräver AI-motorn (ANTHROPIC_API_KEY). ' +
+          'Prova att klistra in texten i textfältet istället.',
+        modelId: 'heuristic-fallback',
+      };
+    }
+
+    const match = imageBase64.match(/^data:(image\/[^;]+);base64,(.+)$/s);
+    if (!match) throw new Error('Ogiltig bild-data URL.');
+    const mediaType = match[1] as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp';
+    const base64Data = match[2];
+
+    const imgContent = {
+      type: 'image' as const,
+      source: { type: 'base64' as const, media_type: mediaType, data: base64Data },
+    };
+
+    if (action === 'translate' || action === 'explain') {
+      const langName = SUPPORTED_OUTPUT_LANGUAGES[language];
+      const prompt =
+        action === 'translate'
+          ? `Extract all visible text from this image and translate it to ${langName}. Return only the translation, preserving structure and line breaks.`
+          : `Look at this image. Extract the text and write a clear, plain-language explanation in ${langName} of what it says and what the reader needs to do. Be concise and use simple language.`;
+
+      const msg = await this.client.messages.create({
+        model: this.model,
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: [imgContent, { type: 'text', text: prompt }] }],
+      });
+
+      const simpleResult = msg.content
+        .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+        .map((b) => b.text)
+        .join('');
+
+      return { type: action, extractedText: '', simpleResult, modelId: this.model };
+    }
+
+    // action === 'analyze': extract text first, then run full analysis pipeline
+    const extractMsg = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 4000,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            imgContent,
+            {
+              type: 'text',
+              text: 'Extract all text visible in this image. Return only the extracted text, preserving line breaks. Do not add commentary.',
+            },
+          ],
+        },
+      ],
+    });
+
+    const extractedText = extractMsg.content
+      .filter((b): b is Anthropic.TextBlock => b.type === 'text')
+      .map((b) => b.text)
+      .join('');
+
+    const { result: analysisResult, modelId, promptVersion } = await this.analyze(
+      extractedText,
+      language,
+    );
+
+    return { type: 'analyze', extractedText, analysisResult, modelId, promptVersion };
   }
 
   /** Tål att modellen råkar linda svaret i ```json-staket. */

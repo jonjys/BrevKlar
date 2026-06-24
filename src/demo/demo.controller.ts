@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { DemoAnalyzeDto } from './dto/demo.dto';
+import { DemoScanDto } from './dto/scan.dto';
 import { DemoService } from './demo.service';
 
 /**
@@ -13,5 +14,10 @@ export class DemoController {
   @Post('analyze')
   analyze(@Body() dto: DemoAnalyzeDto) {
     return this.demo.analyze(dto.text, dto.language ?? 'sv');
+  }
+
+  @Post('scan')
+  scan(@Body() dto: DemoScanDto) {
+    return this.demo.scan(dto.imageBase64, dto.language ?? 'sv', dto.action ?? 'explain');
   }
 }
