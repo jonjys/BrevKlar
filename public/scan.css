@@ -724,3 +724,57 @@
   .input-tabs { gap: 8px; }
   .input-tab { font-size: 14px; }
 }
+
+/* ============================================================
+   URL PANEL
+   ============================================================ */
+.url-panel-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 8px 0;
+}
+.url-field-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  transition: border-color 0.18s, box-shadow 0.18s;
+}
+.url-field-wrap:focus-within {
+  border-color: rgba(37, 99, 235, 0.5);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+.url-field-icon { color: var(--text-muted); flex-shrink: 0; }
+.url-field-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 15px;
+  font-family: var(--font);
+  min-width: 0;
+  caret-color: var(--brand-hi);
+}
+.url-field-input:focus { outline: none; }
+.url-field-input::placeholder { color: var(--text-muted); font-size: 13px; }
+.url-agency-suggestions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.url-sugg-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+  flex-shrink: 0;
+}
+.url-sugg-chips {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}

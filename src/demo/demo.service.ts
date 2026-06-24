@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { AiService, ScanAction, ScanOutcome } from '../ai/ai.service';
 import { OutputLanguage } from '../ai/analysis.contract';
 import { RiskService } from '../risk/risk.service';
@@ -11,6 +11,8 @@ import { RiskService } from '../risk/risk.service';
  */
 @Injectable()
 export class DemoService {
+  private readonly logger = new Logger(DemoService.name);
+
   constructor(
     private readonly ai: AiService,
     private readonly risk: RiskService,
@@ -87,6 +89,59 @@ export class DemoService {
     }
 
     return this.formatOutcome(outcome, language);
+  }
+
+  /** Hämtar en URL, extraherar text och analyserar den precis som vanlig text-input. */
+  async fetchUrl(url: string, language: OutputLanguage, action: ScanAction) {
+    let html: string;
+    try {
+      const resp = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; Brevklar/1.0; document-reader)',
+          Accept: 'text/html,application/xhtml+xml,*/*;q=0.8',
+          'Accept-Language': 'sv,en;q=0.8',
+        },
+        signal: AbortSignal.timeout(12000),
+        redirect: 'follow',
+      });
+      if (!resp.ok) {
+        throw new BadRequestException(`Kunde inte hämta sidan (HTTP ${resp.status}).`);
+      }
+      html = await resp.text();
+    } catch (err) {
+      if (err instanceof BadRequestException) throw err;
+      this.logger.warn(`fetchUrl misslyckades för ${url}: ${(err as Error).message}`);
+      throw new BadRequestException('Kunde inte nå sidan. Kontrollera URL:en och försök igen.');
+    }
+
+    const text = this.htmlToText(html);
+    if (text.length < 80) {
+      throw new BadRequestException('Ingen läsbar text hittades på sidan. Prova att kopiera texten och klistra in den istället.');
+    }
+
+    const outcome = await this.ai.scanText(text.slice(0, 10000), language, action);
+    return { ...this.formatOutcome(outcome, language), sourceUrl: url };
+  }
+
+  /** Enkel HTML → plaintext utan tunga beroenden. */
+  private htmlToText(html: string): string {
+    return html
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<noscript[\s\S]*?<\/noscript>/gi, '')
+      .replace(/<nav[\s\S]*?<\/nav>/gi, '')
+      .replace(/<header[\s\S]*?<\/header>/gi, '')
+      .replace(/<footer[\s\S]*?<\/footer>/gi, '')
+      .replace(/<aside[\s\S]*?<\/aside>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/&nbsp;/g, ' ')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/\s{2,}/g, ' ')
+      .trim();
   }
 
   private formatOutcome(outcome: ScanOutcome, language: OutputLanguage) {

@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { DemoAnalyzeDto } from './dto/demo.dto';
+import { DemoFetchUrlDto } from './dto/fetch-url.dto';
 import { DemoScanDto } from './dto/scan.dto';
 import { DemoService } from './demo.service';
 
@@ -24,5 +25,10 @@ export class DemoController {
       language: dto.language ?? 'sv',
       action: dto.action ?? 'explain',
     });
+  }
+
+  @Post('fetch-url')
+  fetchUrl(@Body() dto: DemoFetchUrlDto) {
+    return this.demo.fetchUrl(dto.url, dto.language ?? 'sv', dto.action ?? 'explain');
   }
 }
