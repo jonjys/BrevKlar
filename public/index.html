@@ -3,50 +3,43 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Brevklar — Förstå dina myndighetsbrev</title>
-    <meta
-      name="description"
-      content="Brevklar översätter svenska myndighetsbrev till vanlig svenska – på ditt språk – med handlingsplan, deadlines och riskbedömning."
-    />
+    <title>Brevklar — Förstå alla dina myndighetsbrev</title>
+    <meta name="description" content="Brevklar förklarar brev från Försäkringskassan, Skatteverket, Kronofogden och alla andra myndigheter — på ditt språk. Gratis demo, ingen inloggning krävs." />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/styles.css" />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563EB'/><path d='M5 11l11 8 11-8' stroke='white' stroke-width='2.2' stroke-linecap='round' fill='none'/><rect x='5' y='11' width='22' height='13' rx='2' stroke='white' stroke-width='2.2' fill='none'/></svg>"
-    />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563EB'/><path d='M5 11l11 8 11-8' stroke='white' stroke-width='2.2' stroke-linecap='round' fill='none'/><rect x='5' y='11' width='22' height='13' rx='2' stroke='white' stroke-width='2.2' fill='none'/></svg>" />
   </head>
   <body>
+
     <!-- NAV -->
     <header class="nav" id="nav">
       <a class="brand" href="/">
         <span class="brand-icon" aria-hidden="true">
           <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
-            <rect width="32" height="32" rx="8" fill="#2563EB" />
-            <path d="M5 11l11 8 11-8" stroke="white" stroke-width="2.2" stroke-linecap="round" />
-            <rect x="5" y="11" width="22" height="13" rx="2" stroke="white" stroke-width="2.2" />
+            <rect width="32" height="32" rx="8" fill="#2563EB"/>
+            <path d="M5 11l11 8 11-8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <rect x="5" y="11" width="22" height="13" rx="2" stroke="white" stroke-width="2.2"/>
           </svg>
         </span>
         <span class="brand-name">Brevklar</span>
       </a>
 
       <nav class="nav-links" aria-label="Site navigation">
+        <a href="#agencies">Myndigheter</a>
         <a href="/scan" data-i18n="nav_scan">Skanna</a>
-        <a href="#how" data-i18n="nav_how">Så funkar det</a>
         <a href="#demo" data-i18n="nav_demo">Prova nu</a>
       </nav>
 
       <div class="nav-actions">
         <select id="lang-picker" class="lang-picker" aria-label="Language"></select>
-        <a href="/scan" class="btn btn-nav" data-i18n="hero_scan_cta">Skanna ett brev</a>
+        <a href="/scan" class="btn btn-nav">Skanna →</a>
       </div>
     </header>
 
     <main>
+
       <!-- HERO -->
       <section class="hero">
         <div class="hero-bg" aria-hidden="true">
@@ -58,62 +51,120 @@
         <div class="hero-inner">
           <div class="hero-badge">
             <span class="badge-dot"></span>
-            <span data-i18n="badge_nostore">Demon sparar inget</span>
+            <span>10 myndigheter · 6 språk · GDPR-säkert</span>
           </div>
 
-          <h1 class="hero-title" data-i18n="hero_title">
-            Förstå vilket brev som helst – på ditt språk
-          </h1>
+          <h1 class="hero-title" data-i18n="hero_title">Förstå vilket brev som helst – på ditt språk</h1>
 
           <p class="hero-sub" data-i18n="hero_sub"></p>
 
-          <div class="hero-cta">
-            <a href="/scan" class="btn btn-primary btn-lg" data-i18n="hero_scan_cta">
-              Skanna ett brev
-            </a>
-            <a href="#demo" class="btn btn-outline btn-lg" data-i18n="hero_cta">Prova med ett brev</a>
+          <!-- QUICK URL INPUT -->
+          <div class="hero-url-box">
+            <div class="hero-url-input-wrap">
+              <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              <input type="url" id="hero-url-input" class="hero-url-input" placeholder="Klistra in länk från Försäkringskassan, Skatteverket..." />
+              <button id="hero-url-btn" class="btn btn-primary btn-sm">Förklara →</button>
+            </div>
+            <p class="hero-url-hint">Eller: <a href="/scan">Skanna ett fysiskt brev</a> · <a href="#demo">Klistra in text</a></p>
           </div>
 
-          <div class="stats-row">
-            <div class="stat">
-              <span class="stat-num">6</span>
-              <span class="stat-label" data-i18n="stat_languages">Språk</span>
-            </div>
-            <span class="stat-sep" aria-hidden="true"></span>
-            <div class="stat">
-              <span class="stat-num">BankID</span>
-              <span class="stat-label" data-i18n="stat_bankid">Säker inloggning</span>
-            </div>
-            <span class="stat-sep" aria-hidden="true"></span>
-            <div class="stat">
-              <span class="stat-num">GDPR</span>
-              <span class="stat-label" data-i18n="stat_gdpr">Integritetsäkert</span>
-            </div>
+          <!-- AGENCY LOGOS ROW -->
+          <div class="agency-logos" aria-label="Stöder alla svenska myndigheter">
+            <span class="agency-logos-label">Förstår brev från:</span>
+            <div class="agency-logos-row" id="agency-logos-row"></div>
           </div>
         </div>
       </section>
 
       <!-- TRUST STRIP -->
-      <div class="trust-strip" role="complementary" aria-label="Trust signals">
+      <div class="trust-strip">
         <div class="trust-inner">
           <span class="trust-label" data-i18n="trust_label">Säkert och integritetsäkert</span>
           <div class="trust-divider" aria-hidden="true"></div>
           <ul class="trust-badges" role="list">
             <li class="trust-badge">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
               <span data-i18n="badge_bankid">Säker inloggning med BankID</span>
             </li>
             <li class="trust-badge">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               <span data-i18n="badge_nostore">Demon sparar inget</span>
             </li>
             <li class="trust-badge">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <span data-i18n="badge_gdpr">GDPR-säkert</span>
             </li>
           </ul>
         </div>
       </div>
+
+      <!-- AGENCY GUIDE -->
+      <section class="agencies" id="agencies">
+        <div class="section-inner">
+          <div class="section-header">
+            <div class="section-tag">Myndighetsguiden</div>
+            <h2>Vilken myndighet är det?</h2>
+            <p>Klicka på en myndighet — vi förklarar deras brev direkt, på ditt språk, oavsett om du fick ett beslut, en räkning eller ett krav.</p>
+          </div>
+
+          <!-- FILTER TABS -->
+          <div class="agency-filter" id="agency-filter">
+            <button class="agency-filter-btn active" data-filter="all">Alla</button>
+            <button class="agency-filter-btn" data-filter="bidrag">Bidrag & ersättning</button>
+            <button class="agency-filter-btn" data-filter="skatt">Skatt & bolag</button>
+            <button class="agency-filter-btn" data-filter="skuld">Skulder & juridik</button>
+            <button class="agency-filter-btn" data-filter="utbildning">Utbildning & pension</button>
+          </div>
+
+          <div class="agency-grid" id="agency-grid"></div>
+        </div>
+      </section>
+
+      <!-- 4-WAY INPUT SECTION -->
+      <section class="inputs-section">
+        <div class="section-inner">
+          <div class="section-header">
+            <div class="section-tag">Lägg in vad som helst</div>
+            <h2>Inget brev är för svårt</h2>
+            <p>Fyra sätt att ladda in ett brev — välj det som passar dig.</p>
+          </div>
+          <div class="inputs-grid">
+            <a href="/scan" class="input-feature-card">
+              <div class="if-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              </div>
+              <strong>Fotografera</strong>
+              <span>Rikta kameran mot brevet. Brevklar läser av texten med AI-syn.</span>
+              <span class="if-arrow">→</span>
+            </a>
+            <a href="/scan" class="input-feature-card">
+              <div class="if-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              </div>
+              <strong>Ladda upp PDF</strong>
+              <span>Dra och släpp en PDF, JPEG eller skärmbild direkt i appen.</span>
+              <span class="if-arrow">→</span>
+            </a>
+            <a href="/scan" class="input-feature-card if-featured">
+              <div class="if-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+              </div>
+              <strong>Bifoga länk</strong>
+              <span>Klistra in URL:en till en myndighetssida — Brevklar hämtar och förklarar direkt.</span>
+              <div class="if-new-badge">NYTT</div>
+              <span class="if-arrow">→</span>
+            </a>
+            <a href="/scan" class="input-feature-card">
+              <div class="if-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+              </div>
+              <strong>Klistra in text</strong>
+              <span>Kopiera texten från ett digitalt brev och klistra in den direkt.</span>
+              <span class="if-arrow">→</span>
+            </a>
+          </div>
+        </div>
+      </section>
 
       <!-- HOW IT WORKS -->
       <section id="how" class="how">
@@ -123,30 +174,27 @@
             <h2 data-i18n="how_title">Så funkar Brevklar</h2>
             <p data-i18n="how_desc">Tre steg från brev till klarhet — på under en minut.</p>
           </div>
-
           <div class="how-grid">
             <div class="how-card">
               <div class="how-step-num">01</div>
-              <div class="how-icon-wrap" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+              <div class="how-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </div>
               <h3 data-i18n="how1_t">1. Lägg in brevet</h3>
               <p data-i18n="how1_d">Fotografera, ladda upp en PDF eller klistra in texten. Brevklar läser av innehållet automatiskt.</p>
             </div>
-
             <div class="how-card">
               <div class="how-step-num">02</div>
-              <div class="how-icon-wrap" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" /></svg>
+              <div class="how-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
               </div>
               <h3 data-i18n="how2_t">2. Få det förklarat</h3>
               <p data-i18n="how2_d">AI:n förklarar vad brevet betyder på ditt språk – utan krångligt myndighetsspråk.</p>
             </div>
-
             <div class="how-card">
               <div class="how-step-num">03</div>
-              <div class="how-icon-wrap" aria-hidden="true">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+              <div class="how-icon-wrap">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
               </div>
               <h3 data-i18n="how3_t">3. Vet vad du ska göra</h3>
               <p data-i18n="how3_d">Du får en handlingsplan, viktiga datum och en tydlig riskbedömning. Missa aldrig en deadline igen.</p>
@@ -161,7 +209,7 @@
           <div class="section-header">
             <div class="section-tag" data-i18n="section_demo_tag">Prova gratis</div>
             <h2 data-i18n="demo_title">Prova Brevklar</h2>
-            <p class="muted" data-i18n="demo_sub">Klistra in texten från ett brev. Du får förklaring, handlingsplan och riskbedömning. Inget sparas.</p>
+            <p class="muted" data-i18n="demo_sub"></p>
           </div>
 
           <div class="demo-card">
@@ -170,22 +218,39 @@
                 <span data-i18n="demo_lang_label">Förklara på</span>
                 <select id="output-lang" class="select"></select>
               </label>
-              <button id="example-btn" class="btn btn-ghost btn-sm" data-i18n="demo_example">
-                Fyll i exempel
+              <button id="example-btn" class="btn btn-ghost btn-sm" data-i18n="demo_example">Fyll i exempel</button>
+            </div>
+
+            <!-- DEMO INPUT TABS -->
+            <div class="demo-tabs">
+              <button class="demo-tab active" data-dtab="text">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                Klistra in text
+              </button>
+              <button class="demo-tab" data-dtab="url">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                Bifoga länk
               </button>
             </div>
 
-            <textarea
-              id="letter-input"
-              class="letter-input"
-              rows="9"
-              data-i18n-ph="demo_placeholder"
-            ></textarea>
+            <!-- TEXT PANEL -->
+            <div class="demo-panel active" id="dpanel-text">
+              <textarea id="letter-input" class="letter-input" rows="9" data-i18n-ph="demo_placeholder"></textarea>
+            </div>
+
+            <!-- URL PANEL -->
+            <div class="demo-panel" id="dpanel-url">
+              <div class="demo-url-wrap">
+                <input type="url" id="demo-url-input" class="demo-url-input" placeholder="https://www.forsakringskassan.se/..." />
+              </div>
+              <div class="demo-url-hints">
+                <span class="url-hint-label">Snabbval:</span>
+                <div id="demo-url-chips" class="url-chips"></div>
+              </div>
+            </div>
 
             <div class="demo-actions">
-              <button id="analyze-btn" class="btn btn-primary btn-full" data-i18n="demo_analyze">
-                Analysera brevet
-              </button>
+              <button id="analyze-btn" class="btn btn-primary btn-full" data-i18n="demo_analyze">Analysera brevet</button>
             </div>
 
             <div id="error-box" class="error-box" hidden></div>
@@ -193,26 +258,45 @@
           </div>
         </div>
       </section>
+
     </main>
 
     <footer class="footer">
       <div class="footer-inner">
-        <div class="footer-brand">
-          <span class="brand-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-              <rect width="32" height="32" rx="8" fill="#2563EB" />
-              <path d="M5 11l11 8 11-8" stroke="white" stroke-width="2.2" stroke-linecap="round" />
-              <rect x="5" y="11" width="22" height="13" rx="2" stroke="white" stroke-width="2.2" />
-            </svg>
-          </span>
-          <span>Brevklar</span>
+        <div class="footer-top">
+          <div class="footer-brand-col">
+            <div class="footer-brand">
+              <span class="brand-icon">
+                <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
+                  <rect width="32" height="32" rx="8" fill="#2563EB"/>
+                  <path d="M5 11l11 8 11-8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+                  <rect x="5" y="11" width="22" height="13" rx="2" stroke="white" stroke-width="2.2"/>
+                </svg>
+              </span>
+              <span>Brevklar</span>
+            </div>
+            <p class="footer-tagline">AI-driven förklaring av svenska myndighetsbrev — på ditt språk.</p>
+          </div>
+          <div class="footer-links-col">
+            <strong>Myndigheter</strong>
+            <div id="footer-agency-links" class="footer-agency-links"></div>
+          </div>
+          <div class="footer-links-col">
+            <strong>Tjänster</strong>
+            <a href="/scan">Skanna ett brev</a>
+            <a href="#demo">Prova demo</a>
+            <a href="/scan">Bifoga länk</a>
+          </div>
         </div>
-        <p data-i18n="footer_note"></p>
-        <p class="footer-copy">© 2026 Brevklar</p>
+        <div class="footer-bottom">
+          <p data-i18n="footer_note"></p>
+          <p class="footer-copy">© 2026 Brevklar</p>
+        </div>
       </div>
     </footer>
 
     <script src="/i18n.js"></script>
+    <script src="/agencies.js"></script>
     <script src="/app.js"></script>
   </body>
 </html>

@@ -107,6 +107,9 @@ const I18N = {
     deal_steps_label: 'Byt nu – steg för steg',
     deal_negotiate_label: 'Förhandlingstips',
     deal_confidence_label: 'Analyskvalitet',
+    scan_tab_url: 'Bifoga länk',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'Hämta & fortsätt →',
   },
   en: {
     _name: 'English',
@@ -211,6 +214,9 @@ const I18N = {
     deal_steps_label: 'Switch now — step by step',
     deal_negotiate_label: 'Negotiation tip',
     deal_confidence_label: 'Analysis quality',
+    scan_tab_url: 'Attach link',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'Fetch & continue →',
   },
   ar: {
     _name: 'العربية',
@@ -315,6 +321,9 @@ const I18N = {
     deal_steps_label: 'غيّر الآن — خطوة بخطوة',
     deal_negotiate_label: 'نصيحة للتفاوض',
     deal_confidence_label: 'جودة التحليل',
+    scan_tab_url: 'إرفاق رابط',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'جلب ومتابعة ←',
   },
   so: {
     _name: 'Soomaali',
@@ -419,6 +428,9 @@ const I18N = {
     deal_steps_label: 'Badal hadda — tallaabo tallaabo',
     deal_negotiate_label: 'Talo wada-hadal',
     deal_confidence_label: 'Tayada falanqaynta',
+    scan_tab_url: 'Ku xidh link',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'Soo qaado oo sii wad →',
   },
   fa: {
     _name: 'فارسی',
@@ -523,6 +535,9 @@ const I18N = {
     deal_steps_label: 'همین الان تغییر دهید',
     deal_negotiate_label: 'نکته مذاکره',
     deal_confidence_label: 'کیفیت تحلیل',
+    scan_tab_url: 'پیوست لینک',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'دریافت و ادامه ←',
   },
   uk: {
     _name: 'Українська',
@@ -627,6 +642,9 @@ const I18N = {
     deal_steps_label: 'Змінити зараз — крок за кроком',
     deal_negotiate_label: 'Порада для переговорів',
     deal_confidence_label: 'Якість аналізу',
+    scan_tab_url: 'Додати посилання',
+    scan_url_placeholder: 'https://www.forsakringskassan.se/...',
+    scan_url_go: 'Завантажити і продовжити →',
   },
 };
 

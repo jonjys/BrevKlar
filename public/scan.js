@@ -1,11 +1,11 @@
-/* Brevklar document intelligence: camera / upload / paste-text → action → result. */
+/* Brevklar document intelligence: camera / upload / URL / paste-text → action → result. */
 
 const STEPS = ['input', 'action', 'result'];
 
 const state = {
   step: 'input',
-  inputMode: 'camera', // 'camera' | 'upload' | 'text'
-  inputData: null,     // { type: 'file', fileBase64: '...' } | { type: 'text', textContent: '...' }
+  inputMode: 'camera', // 'camera' | 'upload' | 'url' | 'text'
+  inputData: null,     // { type: 'file', fileBase64 } | { type: 'text', textContent } | { type: 'url', url }
   stream: null,
 };
 
@@ -147,12 +147,14 @@ function onInputReady(data) {
     textBadge.hidden = false;
     const charsEl = document.getElementById('preview-text-chars');
     if (charsEl) {
-      const charCount = data.type === 'text'
-        ? data.textContent.length
-        : Math.round(data.fileBase64.length * 0.75 / 1000);
-      charsEl.textContent = data.type === 'text'
-        ? `${charCount} tecken`
-        : 'PDF';
+      if (data.type === 'url') {
+        try { charsEl.textContent = new URL(data.url).hostname; }
+        catch { charsEl.textContent = 'URL'; }
+      } else if (data.type === 'text') {
+        charsEl.textContent = `${data.textContent.length} tecken`;
+      } else {
+        charsEl.textContent = 'PDF';
+      }
     }
   }
 
@@ -205,7 +207,7 @@ function setupDropZone() {
 function setupPasteCapture() {
   document.addEventListener('paste', async (e) => {
     if (state.step !== 'input') return;
-    if (state.inputMode === 'text') return; // let textarea handle it
+    if (state.inputMode === 'text') return;
 
     const items = e.clipboardData && e.clipboardData.items;
     if (!items) return;
@@ -225,6 +227,55 @@ function setupPasteCapture() {
       }
     }
   });
+}
+
+/* ---------- URL panel ---------- */
+function setupUrlPanel() {
+  const urlInput = document.getElementById('url-input');
+  const goBtn = document.getElementById('url-go-btn');
+  const chipsContainer = document.getElementById('url-agency-chips');
+
+  if (!urlInput || !goBtn) return;
+
+  if (typeof AGENCIES !== 'undefined' && chipsContainer) {
+    AGENCIES.slice(0, 5).forEach((agency) => {
+      const btn = document.createElement('button');
+      btn.className = 'url-chip';
+      btn.textContent = agency.abbr;
+      btn.title = agency.name;
+      btn.addEventListener('click', () => {
+        urlInput.value = agency.quickUrl;
+        goBtn.disabled = false;
+      });
+      chipsContainer.appendChild(btn);
+    });
+  }
+
+  urlInput.addEventListener('input', () => {
+    goBtn.disabled = !urlInput.value.trim().startsWith('http');
+  });
+
+  goBtn.addEventListener('click', () => {
+    const url = urlInput.value.trim();
+    if (!url.startsWith('http')) return;
+    onInputReady({ type: 'url', url });
+  });
+
+  urlInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !goBtn.disabled) goBtn.click();
+  });
+}
+
+/* Picks up ?url= query param from the landing page quick-input */
+function checkUrlParam() {
+  const params = new URLSearchParams(location.search);
+  const url = params.get('url');
+  if (!url) return;
+  setInputMode('url');
+  const urlInput = document.getElementById('url-input');
+  const goBtn = document.getElementById('url-go-btn');
+  if (urlInput) urlInput.value = url;
+  if (goBtn) goBtn.disabled = false;
 }
 
 /* ---------- text input ---------- */
@@ -255,18 +306,23 @@ async function runScan(action) {
   document.getElementById('scan-output').hidden = true;
   document.getElementById('result-footer').hidden = true;
 
-  const body = {
-    language: getLang(),
-    action,
-  };
-  if (state.inputData.type === 'file') {
-    body.fileBase64 = state.inputData.fileBase64;
+  let endpoint, body;
+
+  if (state.inputData.type === 'url') {
+    endpoint = '/demo/fetch-url';
+    body = { url: state.inputData.url, language: getLang(), action };
   } else {
-    body.textContent = state.inputData.textContent;
+    endpoint = '/demo/scan';
+    body = { language: getLang(), action };
+    if (state.inputData.type === 'file') {
+      body.fileBase64 = state.inputData.fileBase64;
+    } else {
+      body.textContent = state.inputData.textContent;
+    }
   }
 
   try {
-    const res = await fetch('/demo/scan', {
+    const res = await fetch(endpoint, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(body),
@@ -369,7 +425,6 @@ function renderDeal(data) {
   </div>`;
 }
 
-/* Mirrors app.js renderResult, scoped to scan output */
 function riskBar(label, value) {
   const color = value >= 70 ? 'var(--red)' : value >= 35 ? 'var(--amber)' : 'var(--green)';
   return `<div class="risk-bar-row">
@@ -401,13 +456,7 @@ function renderAnalysis(data) {
     </div>
     <div class="block plain"><h3>${esc(t('res_summary'))}</h3><p>${esc(data.summary)}</p></div>
     <div class="block plain"><h3>${esc(t('res_plain'))}</h3><p>${esc(data.plainLanguage)}</p></div>
-    ${
-      actionItems.length
-        ? `<div class="block"><h3>${esc(t('res_action'))}</h3><ul class="action-list">${actionItems
-            .map((s) => `<li>${esc(s)}</li>`)
-            .join('')}</ul></div>`
-        : ''
-    }
+    ${actionItems.length ? `<div class="block"><h3>${esc(t('res_action'))}</h3><ul class="action-list">${actionItems.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${deadlinesHtml}
     ${r ? `<div class="block">
       <h3>${esc(t('res_risk'))}</h3>
@@ -418,25 +467,9 @@ function renderAnalysis(data) {
       </div>
       ${r.needsHumanReview ? `<div class="review-flag">⚠ ${esc(t('res_review'))}</div>` : ''}
     </div>` : ''}
-    ${
-      data.consequences
-        ? `<div class="block"><h3>${esc(t('res_consequences'))}</h3><p>${esc(data.consequences)}</p></div>`
-        : ''
-    }
-    ${
-      (data.amounts || []).length
-        ? `<div class="block"><h3>${esc(t('res_amounts'))}</h3><div class="chips">${data.amounts
-            .map((a) => `<span class="chip">${esc(a)}</span>`)
-            .join('')}</div></div>`
-        : ''
-    }
-    ${
-      (data.referenceNumbers || []).length
-        ? `<div class="block"><h3>${esc(t('res_refs'))}</h3><div class="chips">${data.referenceNumbers
-            .map((a) => `<span class="chip">${esc(a)}</span>`)
-            .join('')}</div></div>`
-        : ''
-    }
+    ${data.consequences ? `<div class="block"><h3>${esc(t('res_consequences'))}</h3><p>${esc(data.consequences)}</p></div>` : ''}
+    ${(data.amounts || []).length ? `<div class="block"><h3>${esc(t('res_amounts'))}</h3><div class="chips">${data.amounts.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
+    ${(data.referenceNumbers || []).length ? `<div class="block"><h3>${esc(t('res_refs'))}</h3><div class="chips">${data.referenceNumbers.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
     <div class="block">
       <h3>${esc(t('res_confidence'))}</h3>
       <div class="confidence-row">
@@ -481,8 +514,14 @@ function init() {
   /* Clipboard paste */
   setupPasteCapture();
 
+  /* URL panel */
+  setupUrlPanel();
+
   /* Text input */
   setupTextInput();
+
+  /* Pre-fill from ?url= query param (coming from landing page) */
+  checkUrlParam();
 
   /* Retake */
   document.getElementById('retake-btn').addEventListener('click', () => {
