@@ -40,6 +40,37 @@
 
     <main>
 
+      <!-- LIVE TICKER -->
+      <div class="ticker-band" aria-hidden="true">
+        <div class="ticker-track">
+          <div class="ticker-scroll">
+            <span class="ti"><b class="ta" style="--c:#3B82F6">FK</b>Sjukpenningbeslut förklarat<em>2 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#4ADE80">SKV</b>Restskatt 3 800 kr analyserad<em>7 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#F87171">KFM</b>Betalningskrav förklarat<em>14 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#38BDF8">MIV</b>Uppehållstillstånd analyserat<em>22 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#A78BFA">AF</b>A-kassabeslut förklarat<em>29 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#34D399">CSN</b>Studielånebeslut förklarat<em>38 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#3B82F6">FK</b>Sjukpenningbeslut förklarat<em>2 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#4ADE80">SKV</b>Restskatt 3 800 kr analyserad<em>7 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#F87171">KFM</b>Betalningskrav förklarat<em>14 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#38BDF8">MIV</b>Uppehållstillstånd analyserat<em>22 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#A78BFA">AF</b>A-kassabeslut förklarat<em>29 min sedan</em></span>
+            <span class="td">·</span>
+            <span class="ti"><b class="ta" style="--c:#34D399">CSN</b>Studielånebeslut förklarat<em>38 min sedan</em></span>
+          </div>
+        </div>
+      </div>
+
       <!-- HERO -->
       <section class="hero">
         <div class="hero-bg" aria-hidden="true">
@@ -48,30 +79,89 @@
           <div class="grid-overlay"></div>
         </div>
 
-        <div class="hero-inner">
-          <div class="hero-badge">
-            <span class="badge-dot"></span>
-            <span>10 myndigheter · 6 språk · GDPR-säkert</span>
-          </div>
-
-          <h1 class="hero-title" data-i18n="hero_title">Förstå vilket brev som helst – på ditt språk</h1>
-
-          <p class="hero-sub" data-i18n="hero_sub"></p>
-
-          <!-- QUICK URL INPUT -->
-          <div class="hero-url-box">
-            <div class="hero-url-input-wrap">
-              <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              <input type="url" id="hero-url-input" class="hero-url-input" placeholder="Klistra in länk från Försäkringskassan, Skatteverket..." />
-              <button id="hero-url-btn" class="btn btn-primary btn-sm">Förklara →</button>
+        <div class="hero-inner hero-split">
+          <!-- TEXT COLUMN -->
+          <div class="hero-text">
+            <div class="hero-badge">
+              <span class="badge-dot"></span>
+              <span>10 myndigheter · 6 språk · GDPR-säkert</span>
             </div>
-            <p class="hero-url-hint">Eller: <a href="/scan">Skanna ett fysiskt brev</a> · <a href="#demo">Klistra in text</a></p>
+
+            <h1 class="hero-title" data-i18n="hero_title">Förstå vilket brev som helst – på ditt språk</h1>
+
+            <p class="hero-sub">AI förklarar svenska myndighetsbrev på sekunder — handlingsplan, deadlines och riskbedömning ingår.</p>
+
+            <!-- QUICK URL INPUT -->
+            <div class="hero-url-box">
+              <div class="hero-url-input-wrap">
+                <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <input type="url" id="hero-url-input" class="hero-url-input" placeholder="Klistra in länk från FK, SKV, KFM..." />
+                <button id="hero-url-btn" class="btn btn-primary btn-sm">Förklara →</button>
+              </div>
+              <p class="hero-url-hint">Eller: <a href="/scan">Skanna brev</a> · <a href="#demo">Klistra in text</a></p>
+            </div>
+
+            <!-- AGENCY LOGOS -->
+            <div class="agency-logos agency-logos-left" aria-label="Stöder alla svenska myndigheter">
+              <span class="agency-logos-label">Förstår brev från:</span>
+              <div class="agency-logos-row" id="agency-logos-row"></div>
+            </div>
           </div>
 
-          <!-- AGENCY LOGOS ROW -->
-          <div class="agency-logos" aria-label="Stöder alla svenska myndigheter">
-            <span class="agency-logos-label">Förstår brev från:</span>
-            <div class="agency-logos-row" id="agency-logos-row"></div>
+          <!-- ANIMATED SCAN PREVIEW CARD -->
+          <div class="hero-demo-col" aria-hidden="true">
+            <div class="scan-preview-card">
+              <!-- PHASE A: Letter being scanned -->
+              <div class="spc-phase spc-letter">
+                <div class="spc-header">
+                  <div class="spc-logo-dot" style="background:#4ADE80"></div>
+                  <span class="spc-sender">Skatteverket</span>
+                  <span class="spc-label-chip">Inkomstdeklaration</span>
+                </div>
+                <div class="spc-lines">
+                  <div class="spc-line spc-line-lg"></div>
+                  <div class="spc-line spc-line-sm" style="width:68%"></div>
+                  <div class="spc-line spc-line-sm" style="width:82%"></div>
+                  <div class="spc-line spc-line-sm" style="width:55%"></div>
+                </div>
+                <div class="spc-amount-row">
+                  <span class="spc-amount-label">Belopp att betala</span>
+                  <span class="spc-amount">3 800 kr</span>
+                </div>
+                <div class="spc-lines" style="margin-top:12px">
+                  <div class="spc-line spc-line-sm" style="width:90%"></div>
+                  <div class="spc-line spc-line-sm" style="width:74%"></div>
+                </div>
+                <div class="spc-laser" aria-hidden="true"></div>
+                <div class="spc-scanning-badge">
+                  <span class="spc-spin"></span>Analyserar med AI…
+                </div>
+              </div>
+
+              <!-- PHASE B: AI result -->
+              <div class="spc-phase spc-result">
+                <div class="spc-result-head">
+                  <span class="spc-risk-pill risk-medium">Medel risk · 48/100</span>
+                  <span class="spc-sender-tag">Skatteverket</span>
+                </div>
+                <p class="spc-summary">Du har en restskatt på 3 800 kr från inkomstdeklarationen. Beloppet måste betalas senast 12 sep.</p>
+                <div class="spc-deadline">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                  Deadline: 12 september 2025
+                </div>
+                <ul class="spc-actions">
+                  <li>Betala via internetbanken eller Swish</li>
+                  <li>Ange OCR-nummer vid betalning</li>
+                  <li>Kontakta SKV vid frågor: 0771-567 567</li>
+                </ul>
+                <div class="spc-footer-bar">
+                  <span>Confidence</span>
+                  <span class="spc-conf-bar"><span style="width:88%"></span></span>
+                  <span>88%</span>
+                </div>
+              </div>
+            </div>
+            <p class="hero-demo-label">Prova med ditt eget brev ↑</p>
           </div>
         </div>
       </section>
