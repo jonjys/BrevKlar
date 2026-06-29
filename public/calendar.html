@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="sv" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Brevklar — Mina deadlines</title>
+    <meta name="description" content="Alla dina deadlines från myndighetsbrev på ett ställe. Buffert-varningar, kalenderöversikt och export till Google Cal." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/styles.css" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563EB'/><path d='M5 11l11 8 11-8' stroke='white' stroke-width='2.2' stroke-linecap='round' fill='none'/><rect x='5' y='11' width='22' height='13' rx='2' stroke='white' stroke-width='2.2' fill='none'/></svg>" />
+  </head>
+  <body>
+
+    <!-- NAV -->
+    <header class="nav" id="nav">
+      <a class="brand" href="/">
+        <span class="brand-icon" aria-hidden="true">
+          <svg width="22" height="22" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#2563EB"/>
+            <path d="M5 11l11 8 11-8" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+            <rect x="5" y="11" width="22" height="13" rx="2" stroke="white" stroke-width="2.2"/>
+          </svg>
+        </span>
+        <span class="brand-name">Brevklar</span>
+      </a>
+
+      <nav class="nav-links" aria-label="Site navigation">
+        <a href="/#agencies">Myndigheter</a>
+        <a href="/scan">Skanna</a>
+        <a href="/calendar" class="nav-active">Mina deadlines</a>
+      </nav>
+
+      <div class="nav-actions">
+        <select id="lang-picker" class="lang-picker" aria-label="Language"></select>
+        <a href="/scan" class="btn btn-nav">Skanna →</a>
+      </div>
+    </header>
+
+    <main>
+      <div class="cal-page">
+
+        <!-- PAGE HEADER -->
+        <div class="cal-page-header">
+          <div>
+            <h1 class="cal-page-title">Mina deadlines</h1>
+            <p class="cal-page-sub">Deadlines extraheras automatiskt när du analyserar ett brev. De sparas lokalt i din webbläsare.</p>
+          </div>
+          <div class="cal-header-actions">
+            <button class="btn btn-outline btn-sm" id="cal-export-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportera ICS
+            </button>
+            <button class="btn btn-outline btn-sm cal-clear-btn" id="cal-clear-btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+              Rensa allt
+            </button>
+          </div>
+        </div>
+
+        <!-- STATS ROW -->
+        <div class="cal-stats" id="cal-stats"></div>
+
+        <!-- MAIN LAYOUT -->
+        <div class="cal-layout">
+
+          <!-- CALENDAR GRID -->
+          <div class="cal-panel">
+            <div class="cal-nav">
+              <button class="cal-nav-btn" id="cal-prev" aria-label="Föregående månad">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <span class="cal-month-label" id="cal-month-label"></span>
+              <button class="cal-nav-btn" id="cal-next" aria-label="Nästa månad">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+
+            <div class="cal-grid" id="cal-grid">
+              <div class="cal-weekday">Mån</div>
+              <div class="cal-weekday">Tis</div>
+              <div class="cal-weekday">Ons</div>
+              <div class="cal-weekday">Tor</div>
+              <div class="cal-weekday">Fre</div>
+              <div class="cal-weekday">Lör</div>
+              <div class="cal-weekday">Sön</div>
+            </div>
+          </div>
+
+          <!-- DEADLINE LIST -->
+          <div class="cal-sidebar">
+            <div class="cal-sidebar-header">
+              <h2 class="cal-sidebar-title">Kommande deadlines</h2>
+              <a href="/scan" class="btn btn-primary btn-sm">+ Skanna brev</a>
+            </div>
+            <div id="cal-list"></div>
+          </div>
+        </div>
+
+        <!-- EMPTY STATE -->
+        <div class="cal-empty" id="cal-empty" hidden>
+          <div class="cal-empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="4" width="18" height="18" rx="2"/>
+              <line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="2" x2="8" y2="6"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+            </svg>
+          </div>
+          <h2>Inga deadlines sparade</h2>
+          <p>Analysera ett myndighetsbrev så extraheras deadlines automatiskt och visas här.</p>
+          <a href="/scan" class="btn btn-primary">Skanna ditt första brev →</a>
+        </div>
+
+      </div>
+    </main>
+
+    <!-- DELETE CONFIRM MODAL -->
+    <div class="modal-backdrop" id="modal-backdrop" hidden>
+      <div class="modal">
+        <h3>Ta bort deadline?</h3>
+        <p id="modal-desc"></p>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-sm" id="modal-cancel">Avbryt</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff" id="modal-confirm">Ta bort</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAY DETAIL MODAL -->
+    <div class="modal-backdrop" id="day-modal" hidden>
+      <div class="modal">
+        <h3 id="day-modal-title"></h3>
+        <div id="day-modal-content"></div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost btn-sm" id="day-modal-close">Stäng</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/i18n.js"></script>
+    <script src="/agencies.js"></script>
+    <script src="/calendar.js"></script>
+  </body>
+</html>

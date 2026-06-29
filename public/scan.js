@@ -329,6 +329,7 @@ async function runScan(action) {
     });
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    saveScanDeadlines(data);
     renderScanResult(data);
   } catch {
     document.getElementById('scan-output').innerHTML =
@@ -338,6 +339,29 @@ async function runScan(action) {
     document.getElementById('scan-loading').style.display = 'none';
     document.getElementById('result-footer').hidden = false;
   }
+}
+
+/* ---------- deadline persistence ---------- */
+function saveScanDeadlines(data) {
+  if (!data || !Array.isArray(data.deadlines) || data.deadlines.length === 0) return;
+  const c = data.classification || {};
+  try {
+    const existing = JSON.parse(localStorage.getItem('bk_deadlines') || '[]');
+    const now = new Date().toISOString();
+    data.deadlines.forEach((dl) => {
+      if (!dl.dueDate && !dl.description) return;
+      existing.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        description: dl.description || '',
+        dueDate: dl.dueDate || null,
+        senderName: c.senderName || '',
+        documentType: c.documentType || '',
+        riskLevel: data.risk?.level || 'low',
+        savedAt: now,
+      });
+    });
+    localStorage.setItem('bk_deadlines', JSON.stringify(existing));
+  } catch { /* ignore */ }
 }
 
 /* ---------- result renderers ---------- */
@@ -442,10 +466,11 @@ function renderAnalysis(data) {
   if (c && c.documentType) tags.push(`<span class="tag">${esc(t('res_type'))}: ${esc(c.documentType)}</span>`);
 
   const actionItems = (data.actionPlan || []).map((a) => a.step);
-  const deadlinesHtml = (data.deadlines || []).filter((d) => d.dueDate || d.description).length
-    ? `<div class="block"><h3>${esc(t('res_deadlines'))}</h3><ul class="deadline-list">${data.deadlines
+  const validDl = (data.deadlines || []).filter((d) => d.dueDate || d.description);
+  const deadlinesHtml = validDl.length
+    ? `<div class="block"><h3>${esc(t('res_deadlines'))}</h3><ul class="deadline-list">${validDl
         .map((d) => `<li><span>${esc(d.description)}</span><span class="deadline-date">${esc(d.dueDate || '—')}</span></li>`)
-        .join('')}</ul></div>`
+        .join('')}</ul><a href="/calendar" class="cal-link-btn">Visa i kalender →</a></div>`
     : '';
   const confidencePct = Math.round((data.trust?.confidenceScore ?? 0) * 100);
 
