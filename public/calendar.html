@@ -27,14 +27,14 @@
       </a>
 
       <nav class="nav-links" aria-label="Site navigation">
-        <a href="/#agencies">Myndigheter</a>
-        <a href="/scan">Skanna</a>
-        <a href="/calendar" class="nav-active">Mina deadlines</a>
+        <a href="/#agencies" data-i18n="nav_agencies">Myndigheter</a>
+        <a href="/scan" data-i18n="nav_scan">Skanna</a>
+        <a href="/calendar" class="nav-active" data-i18n="nav_calendar">Mina deadlines</a>
       </nav>
 
       <div class="nav-actions">
         <select id="lang-picker" class="lang-picker" aria-label="Language"></select>
-        <a href="/scan" class="btn btn-nav">Skanna →</a>
+        <a href="/scan" class="btn btn-nav" data-i18n="nav_scan_btn">Skanna →</a>
       </div>
     </header>
 
@@ -44,17 +44,17 @@
         <!-- PAGE HEADER -->
         <div class="cal-page-header">
           <div>
-            <h1 class="cal-page-title">Mina deadlines</h1>
-            <p class="cal-page-sub">Deadlines extraheras automatiskt när du analyserar ett brev. De sparas lokalt i din webbläsare.</p>
+            <h1 class="cal-page-title" data-i18n="cal_title">Mina deadlines</h1>
+            <p class="cal-page-sub" data-i18n="cal_sub">Deadlines extraheras automatiskt när du analyserar ett brev. De sparas lokalt i din webbläsare.</p>
           </div>
           <div class="cal-header-actions">
             <button class="btn btn-outline btn-sm" id="cal-export-btn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Exportera ICS
+              <span data-i18n="cal_export">Exportera ICS</span>
             </button>
             <button class="btn btn-outline btn-sm cal-clear-btn" id="cal-clear-btn">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-              Rensa allt
+              <span data-i18n="cal_clear">Rensa allt</span>
             </button>
           </div>
         </div>
@@ -78,21 +78,21 @@
             </div>
 
             <div class="cal-grid" id="cal-grid">
-              <div class="cal-weekday">Mån</div>
-              <div class="cal-weekday">Tis</div>
-              <div class="cal-weekday">Ons</div>
-              <div class="cal-weekday">Tor</div>
-              <div class="cal-weekday">Fre</div>
-              <div class="cal-weekday">Lör</div>
-              <div class="cal-weekday">Sön</div>
+              <div class="cal-weekday" data-i18n="cal_wd_mon">Mån</div>
+              <div class="cal-weekday" data-i18n="cal_wd_tue">Tis</div>
+              <div class="cal-weekday" data-i18n="cal_wd_wed">Ons</div>
+              <div class="cal-weekday" data-i18n="cal_wd_thu">Tor</div>
+              <div class="cal-weekday" data-i18n="cal_wd_fri">Fre</div>
+              <div class="cal-weekday" data-i18n="cal_wd_sat">Lör</div>
+              <div class="cal-weekday" data-i18n="cal_wd_sun">Sön</div>
             </div>
           </div>
 
           <!-- DEADLINE LIST -->
           <div class="cal-sidebar">
             <div class="cal-sidebar-header">
-              <h2 class="cal-sidebar-title">Kommande deadlines</h2>
-              <a href="/scan" class="btn btn-primary btn-sm">+ Skanna brev</a>
+              <h2 class="cal-sidebar-title" data-i18n="cal_sidebar_title">Kommande deadlines</h2>
+              <a href="/scan" class="btn btn-primary btn-sm" data-i18n="cal_scan_btn">+ Skanna brev</a>
             </div>
             <div id="cal-list"></div>
           </div>
@@ -108,9 +108,9 @@
               <line x1="3" y1="10" x2="21" y2="10"/>
             </svg>
           </div>
-          <h2>Inga deadlines sparade</h2>
-          <p>Analysera ett myndighetsbrev så extraheras deadlines automatiskt och visas här.</p>
-          <a href="/scan" class="btn btn-primary">Skanna ditt första brev →</a>
+          <h2 data-i18n="cal_empty_title">Inga deadlines sparade</h2>
+          <p data-i18n="cal_empty_desc">Analysera ett myndighetsbrev så extraheras deadlines automatiskt och visas här.</p>
+          <a href="/scan" class="btn btn-primary" data-i18n="cal_empty_cta">Skanna ditt första brev →</a>
         </div>
 
       </div>
@@ -119,11 +119,11 @@
     <!-- DELETE CONFIRM MODAL -->
     <div class="modal-backdrop" id="modal-backdrop" hidden>
       <div class="modal">
-        <h3>Ta bort deadline?</h3>
+        <h3 data-i18n="cal_del_title">Ta bort deadline?</h3>
         <p id="modal-desc"></p>
         <div class="modal-actions">
-          <button class="btn btn-ghost btn-sm" id="modal-cancel">Avbryt</button>
-          <button class="btn btn-sm" style="background:var(--red);color:#fff" id="modal-confirm">Ta bort</button>
+          <button class="btn btn-ghost btn-sm" id="modal-cancel" data-i18n="cal_del_cancel">Avbryt</button>
+          <button class="btn btn-sm" style="background:var(--red);color:#fff" id="modal-confirm" data-i18n="cal_del_confirm">Ta bort</button>
         </div>
       </div>
     </div>
@@ -134,7 +134,7 @@
         <h3 id="day-modal-title"></h3>
         <div id="day-modal-content"></div>
         <div class="modal-actions">
-          <button class="btn btn-ghost btn-sm" id="day-modal-close">Stäng</button>
+          <button class="btn btn-ghost btn-sm" id="day-modal-close" data-i18n="cal_close">Stäng</button>
         </div>
       </div>
     </div>
@@ -142,5 +142,6 @@
     <script src="/i18n.js"></script>
     <script src="/agencies.js"></script>
     <script src="/calendar.js"></script>
+    <script src="/help-menu.js"></script>
   </body>
 </html>

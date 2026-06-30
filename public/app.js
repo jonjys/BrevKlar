@@ -73,7 +73,7 @@ function buildAgencyGrid() {
         <p class="agency-desc">${esc(a.desc)}</p>
         <div class="agency-topics">${a.topics.slice(0, 4).map((tp) => `<span class="topic-chip">${esc(tp)}</span>`).join('')}</div>
         <div class="agency-cta">
-          <button class="btn btn-sm btn-outline agency-scan-btn" data-url="${esc(a.quickUrl)}">Förklara brev →</button>
+          <button class="btn btn-sm btn-outline agency-scan-btn" data-url="${esc(a.quickUrl)}">${esc(t('agency_cta'))}</button>
         </div>
       </div>
     `).join('');
@@ -338,6 +338,8 @@ function init() {
 
   document.addEventListener('langchange', () => {
     if (lastResult) renderResult(lastResult);
+    // re-render agency grid so CTA button text updates
+    if (typeof AGENCIES !== 'undefined') buildAgencyGrid();
   });
 
   applyTranslations();

@@ -37,8 +37,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   padding: 16px 22px;
 }
+.scan-top .help-menu-btn { margin-left: auto; }
 
 /* STEP DOTS */
 .step-dots {

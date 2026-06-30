@@ -27,18 +27,18 @@
       </a>
 
       <nav class="nav-links" aria-label="Site navigation">
-        <a href="#agencies">Myndigheter</a>
+        <a href="#agencies" data-i18n="nav_agencies">Myndigheter</a>
         <a href="/scan" data-i18n="nav_scan">Skanna</a>
         <a href="#demo" data-i18n="nav_demo">Prova nu</a>
         <a href="/calendar" class="nav-cal-link">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          Mina deadlines
+          <span data-i18n="nav_calendar">Mina deadlines</span>
         </a>
       </nav>
 
       <div class="nav-actions">
         <select id="lang-picker" class="lang-picker" aria-label="Language"></select>
-        <a href="/scan" class="btn btn-nav">Skanna →</a>
+        <a href="/scan" class="btn btn-nav" data-i18n="nav_scan_btn">Skanna →</a>
       </div>
     </header>
 
@@ -88,26 +88,26 @@
           <div class="hero-text">
             <div class="hero-badge">
               <span class="badge-dot"></span>
-              <span>10 myndigheter · 6 språk · GDPR-säkert</span>
+              <span data-i18n="hero_badge">10 myndigheter · 6 språk · GDPR-säkert</span>
             </div>
 
             <h1 class="hero-title" data-i18n="hero_title">Förstå vilket brev som helst – på ditt språk</h1>
 
-            <p class="hero-sub">AI förklarar svenska myndighetsbrev på sekunder — handlingsplan, deadlines och riskbedömning ingår.</p>
+            <p class="hero-sub" data-i18n="hero_sub_short">AI förklarar svenska myndighetsbrev på sekunder — handlingsplan, deadlines och riskbedömning ingår.</p>
 
             <!-- QUICK URL INPUT -->
             <div class="hero-url-box">
               <div class="hero-url-input-wrap">
                 <svg class="url-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                <input type="url" id="hero-url-input" class="hero-url-input" placeholder="Klistra in länk från FK, SKV, KFM..." />
-                <button id="hero-url-btn" class="btn btn-primary btn-sm">Förklara →</button>
+                <input type="url" id="hero-url-input" class="hero-url-input" data-i18n-ph="hero_url_placeholder" placeholder="Klistra in länk från FK, SKV, KFM..." />
+                <button id="hero-url-btn" class="btn btn-primary btn-sm" data-i18n="hero_url_btn">Förklara</button>
               </div>
-              <p class="hero-url-hint">Eller: <a href="/scan">Skanna brev</a> · <a href="#demo">Klistra in text</a></p>
+              <p class="hero-url-hint"><span data-i18n="hero_url_or">Eller:</span> <a href="/scan" data-i18n="hero_url_scan">Skanna brev</a> · <a href="#demo" data-i18n="hero_url_paste">Klistra in text</a></p>
             </div>
 
             <!-- AGENCY LOGOS -->
             <div class="agency-logos agency-logos-left" aria-label="Stöder alla svenska myndigheter">
-              <span class="agency-logos-label">Förstår brev från:</span>
+              <span class="agency-logos-label" data-i18n="hero_logos_label">Förstår brev från:</span>
               <div class="agency-logos-row" id="agency-logos-row"></div>
             </div>
           </div>
@@ -165,7 +165,7 @@
                 </div>
               </div>
             </div>
-            <p class="hero-demo-label">Prova med ditt eget brev ↑</p>
+            <p class="hero-demo-label" data-i18n="hero_demo_label">Prova med ditt eget brev ↑</p>
           </div>
         </div>
       </section>
@@ -196,18 +196,18 @@
       <section class="agencies" id="agencies">
         <div class="section-inner">
           <div class="section-header">
-            <div class="section-tag">Myndighetsguiden</div>
-            <h2>Vilken myndighet är det?</h2>
-            <p>Klicka på en myndighet — vi förklarar deras brev direkt, på ditt språk, oavsett om du fick ett beslut, en räkning eller ett krav.</p>
+            <div class="section-tag" data-i18n="agency_tag">Myndighetsguiden</div>
+            <h2 data-i18n="agency_title">Vilken myndighet är det?</h2>
+            <p data-i18n="agency_desc">Klicka på en myndighet — vi förklarar deras brev direkt, på ditt språk, oavsett om du fick ett beslut, en räkning eller ett krav.</p>
           </div>
 
           <!-- FILTER TABS -->
           <div class="agency-filter" id="agency-filter">
-            <button class="agency-filter-btn active" data-filter="all">Alla</button>
-            <button class="agency-filter-btn" data-filter="bidrag">Bidrag & ersättning</button>
-            <button class="agency-filter-btn" data-filter="skatt">Skatt & bolag</button>
-            <button class="agency-filter-btn" data-filter="skuld">Skulder & juridik</button>
-            <button class="agency-filter-btn" data-filter="utbildning">Utbildning & pension</button>
+            <button class="agency-filter-btn active" data-filter="all" data-i18n="filter_all">Alla</button>
+            <button class="agency-filter-btn" data-filter="bidrag" data-i18n="filter_bidrag">Bidrag &amp; ersättning</button>
+            <button class="agency-filter-btn" data-filter="skatt" data-i18n="filter_skatt">Skatt &amp; bolag</button>
+            <button class="agency-filter-btn" data-filter="skuld" data-i18n="filter_skuld">Skulder &amp; juridik</button>
+            <button class="agency-filter-btn" data-filter="utbildning" data-i18n="filter_utbildning">Utbildning &amp; pension</button>
           </div>
 
           <div class="agency-grid" id="agency-grid"></div>
@@ -218,42 +218,42 @@
       <section class="inputs-section">
         <div class="section-inner">
           <div class="section-header">
-            <div class="section-tag">Lägg in vad som helst</div>
-            <h2>Inget brev är för svårt</h2>
-            <p>Fyra sätt att ladda in ett brev — välj det som passar dig.</p>
+            <div class="section-tag" data-i18n="inputs_tag">Lägg in vad som helst</div>
+            <h2 data-i18n="inputs_title">Inget brev är för svårt</h2>
+            <p data-i18n="inputs_desc">Fyra sätt att ladda in ett brev — välj det som passar dig.</p>
           </div>
           <div class="inputs-grid">
             <a href="/scan" class="input-feature-card">
               <div class="if-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </div>
-              <strong>Fotografera</strong>
-              <span>Rikta kameran mot brevet. Brevklar läser av texten med AI-syn.</span>
+              <strong data-i18n="input_photo_t">Fotografera</strong>
+              <span data-i18n="input_photo_d">Rikta kameran mot brevet. Brevklar läser av texten med AI-syn.</span>
               <span class="if-arrow">→</span>
             </a>
             <a href="/scan" class="input-feature-card">
               <div class="if-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               </div>
-              <strong>Ladda upp PDF</strong>
-              <span>Dra och släpp en PDF, JPEG eller skärmbild direkt i appen.</span>
+              <strong data-i18n="input_upload_t">Ladda upp PDF</strong>
+              <span data-i18n="input_upload_d">Dra och släpp en PDF, JPEG eller skärmbild direkt i appen.</span>
               <span class="if-arrow">→</span>
             </a>
             <a href="/scan" class="input-feature-card if-featured">
               <div class="if-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               </div>
-              <strong>Bifoga länk</strong>
-              <span>Klistra in URL:en till en myndighetssida — Brevklar hämtar och förklarar direkt.</span>
-              <div class="if-new-badge">NYTT</div>
+              <strong data-i18n="input_url_t">Bifoga länk</strong>
+              <span data-i18n="input_url_d">Klistra in URL:en till en myndighetssida — Brevklar hämtar och förklarar direkt.</span>
+              <div class="if-new-badge" data-i18n="input_url_new">NYTT</div>
               <span class="if-arrow">→</span>
             </a>
             <a href="/scan" class="input-feature-card">
               <div class="if-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               </div>
-              <strong>Klistra in text</strong>
-              <span>Kopiera texten från ett digitalt brev och klistra in den direkt.</span>
+              <strong data-i18n="input_text_t">Klistra in text</strong>
+              <span data-i18n="input_text_d">Kopiera texten från ett digitalt brev och klistra in den direkt.</span>
               <span class="if-arrow">→</span>
             </a>
           </div>
@@ -264,9 +264,9 @@
       <section class="tips-section">
         <div class="section-inner">
           <div class="section-header">
-            <div class="section-tag">Tips &amp; Trix</div>
-            <h2>Bli ett proffs på 2 minuter</h2>
-            <p>Enkla knep som ger dig bättre och snabbare svar — direkt.</p>
+            <div class="section-tag" data-i18n="tips_tag">Tips &amp; Trix</div>
+            <h2 data-i18n="tips_title">Bli ett proffs på 2 minuter</h2>
+            <p data-i18n="tips_desc">Enkla knep som ger dig bättre och snabbare svar — direkt.</p>
           </div>
           <div class="tips-grid">
 
@@ -275,8 +275,8 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
               </div>
-              <h3>Fotografera i bra ljus</h3>
-              <p>Dagsljus eller stark lampa ger skarpare text. Håll kameran stilla och fyll hela bildrutan med brevet — inga skuggiga kanter.</p>
+              <h3 data-i18n="tip1_t">Fotografera i bra ljus</h3>
+              <p data-i18n="tip1_d">Dagsljus eller stark lampa ger skarpare text. Håll kameran stilla och fyll hela bildrutan med brevet.</p>
             </div>
 
             <div class="tip-card tip-card-brand">
@@ -284,9 +284,9 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
               </div>
-              <h3>Bifoga länk — snabbaste sättet</h3>
-              <p>Fick du ett beslut på webben? Kopiera URL:en från Försäkringskassan.se eller Skatteverket.se och klistra in ovan — Brevklar hämtar och förklarar sidan direkt.</p>
-              <div class="tip-callout">Nytt: funkar för alla myndigheter</div>
+              <h3 data-i18n="tip2_t">Bifoga länk — snabbaste sättet</h3>
+              <p data-i18n="tip2_d">Fick du ett beslut på webben? Kopiera URL:en och klistra in ovan — Brevklar hämtar och förklarar sidan direkt.</p>
+              <div class="tip-callout" data-i18n="tip2_callout">Nytt: funkar för alla myndigheter</div>
             </div>
 
             <div class="tip-card">
@@ -294,8 +294,8 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
               </div>
-              <h3>Klistra in hela texten</h3>
-              <p>Kopiera hela brevet inklusive avsändarinformation och referensnummer. Ju mer text — desto säkrare och fullständigare analys.</p>
+              <h3 data-i18n="tip3_t">Klistra in hela texten</h3>
+              <p data-i18n="tip3_d">Kopiera hela brevet inklusive avsändarinfo och referensnummer. Ju mer text — desto säkrare analys.</p>
             </div>
 
             <div class="tip-card">
@@ -303,8 +303,8 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
               </div>
-              <h3>Välj ditt modersmål</h3>
-              <p>Ändra språket längst upp på sidan. Du får hela analysen — sammanfattning, handlingsplan och riskbedömning — på arabiska, somaliska, dari, ukrainska eller engelska.</p>
+              <h3 data-i18n="tip4_t">Välj ditt modersmål</h3>
+              <p data-i18n="tip4_d">Ändra språket längst upp på sidan. Du får hela analysen på arabiska, somaliska, dari, ukrainska eller engelska.</p>
             </div>
 
             <div class="tip-card tip-card-alert">
@@ -312,8 +312,8 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
               </div>
-              <h3>Röda datum = agera NU</h3>
-              <p>Deadlines markeras i rött i handlingsplanen. Missar du dem kan det leda till extra avgifter, indrivning via Kronofogden eller att du förlorar rätten att överklaga.</p>
+              <h3 data-i18n="tip5_t">Röda datum = agera NU</h3>
+              <p data-i18n="tip5_d">Deadlines markeras i rött i handlingsplanen. Missar du dem kan det leda till extra avgifter eller att du förlorar rätten att överklaga.</p>
             </div>
 
             <div class="tip-card">
@@ -321,15 +321,15 @@
               <div class="tip-icon-wrap">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
               </div>
-              <h3>Ctrl+V för skärmbild</h3>
-              <p>Ta en screenshot av ett digitalt brev. Gå till Skanna-sidan och tryck Ctrl+V (eller CMD+V på Mac) — bilden klistras direkt in och analyseras.</p>
+              <h3 data-i18n="tip6_t">Ctrl+V för skärmbild</h3>
+              <p data-i18n="tip6_d">Ta en screenshot. Gå till Skanna och tryck Ctrl+V (CMD+V på Mac) — bilden klistras in och analyseras.</p>
             </div>
 
           </div>
 
           <!-- DOCUMENT TYPES -->
           <div class="doc-types-wrap">
-            <p class="doc-types-label">Brevklar förstår bland annat:</p>
+            <p class="doc-types-label" data-i18n="doc_types_label">Brevklar förstår bland annat:</p>
             <div class="doc-types">
               <span class="doc-type-tag">Beslut om sjukpenning</span>
               <span class="doc-type-tag">Restskatt</span>
@@ -410,11 +410,11 @@
             <div class="demo-tabs">
               <button class="demo-tab active" data-dtab="text">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                Klistra in text
+                <span data-i18n="demo_tab_text">Klistra in text</span>
               </button>
               <button class="demo-tab" data-dtab="url">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                Bifoga länk
+                <span data-i18n="demo_tab_url">Bifoga länk</span>
               </button>
             </div>
 
@@ -460,17 +460,17 @@
               </span>
               <span>Brevklar</span>
             </div>
-            <p class="footer-tagline">AI-driven förklaring av svenska myndighetsbrev — på ditt språk.</p>
+            <p class="footer-tagline" data-i18n="footer_tagline">AI-driven förklaring av svenska myndighetsbrev — på ditt språk.</p>
           </div>
           <div class="footer-links-col">
-            <strong>Myndigheter</strong>
+            <strong data-i18n="footer_col_agencies">Myndigheter</strong>
             <div id="footer-agency-links" class="footer-agency-links"></div>
           </div>
           <div class="footer-links-col">
-            <strong>Tjänster</strong>
-            <a href="/scan">Skanna ett brev</a>
-            <a href="#demo">Prova demo</a>
-            <a href="/scan">Bifoga länk</a>
+            <strong data-i18n="footer_col_services">Tjänster</strong>
+            <a href="/scan" data-i18n="hero_url_scan">Skanna brev</a>
+            <a href="#demo" data-i18n="nav_demo">Prova nu</a>
+            <a href="/scan" data-i18n="input_url_t">Bifoga länk</a>
           </div>
         </div>
         <div class="footer-bottom">
@@ -483,5 +483,6 @@
     <script src="/i18n.js"></script>
     <script src="/agencies.js"></script>
     <script src="/app.js"></script>
+    <script src="/help-menu.js"></script>
   </body>
 </html>

@@ -65,12 +65,24 @@ function daysUntil(dateStr) {
 
 function urgencyLabel(days) {
   if (days === null) return null;
-  if (days < 0) return { text: `${Math.abs(days)} dagar sedan`, cls: 'urg-past' };
-  if (days === 0) return { text: 'Idag!', cls: 'urg-today' };
-  if (days <= 3) return { text: `${days} dag${days > 1 ? 'ar' : ''} kvar`, cls: 'urg-critical' };
-  if (days <= 7) return { text: `${days} dagar kvar`, cls: 'urg-high' };
-  if (days <= 14) return { text: `${days} dagar kvar`, cls: 'urg-medium' };
-  return { text: `${days} dagar kvar`, cls: 'urg-ok' };
+  const tFn = typeof t === 'function' ? t : (k) => k;
+  if (days < 0) return { text: `${Math.abs(days)} ${tFn('cal_days_ago')}`, cls: 'urg-past' };
+  if (days === 0) return { text: tFn('cal_urg_today'), cls: 'urg-today' };
+  if (days <= 3) return { text: `${days} ${days > 1 ? tFn('cal_days_p') : tFn('cal_day_s')} ${tFn('cal_days_left')}`, cls: 'urg-critical' };
+  if (days <= 7) return { text: `${days} ${tFn('cal_days_p')} ${tFn('cal_days_left')}`, cls: 'urg-high' };
+  if (days <= 14) return { text: `${days} ${tFn('cal_days_p')} ${tFn('cal_days_left')}`, cls: 'urg-medium' };
+  return { text: `${days} ${tFn('cal_days_p')} ${tFn('cal_days_left')}`, cls: 'urg-ok' };
+}
+
+function getMonthLabel(year, month) {
+  if (typeof getLang === 'function') {
+    const lang = getLang();
+    const locale = lang === 'sv' ? 'sv-SE' : lang === 'en' ? 'en-US' : lang;
+    try {
+      return new Date(year, month, 1).toLocaleString(locale, { month: 'long', year: 'numeric' });
+    } catch { /* fallback below */ }
+  }
+  return `${MONTH_SV[month]} ${year}`;
 }
 
 /* ---- Stats row ---- */
@@ -92,22 +104,23 @@ function renderStats(deadlines) {
     return diff !== null && diff >= 0 && diff <= 30;
   }).length;
 
+  const tFn = typeof t === 'function' ? t : (k) => k;
   stats.innerHTML = `
     <div class="cal-stat ${overdue > 0 ? 'cal-stat-danger' : ''}">
       <span class="cal-stat-num">${overdue}</span>
-      <span class="cal-stat-label">Förfallna</span>
+      <span class="cal-stat-label">${tFn('cal_stat_overdue')}</span>
     </div>
     <div class="cal-stat ${thisWeek > 0 ? 'cal-stat-warn' : ''}">
       <span class="cal-stat-num">${thisWeek}</span>
-      <span class="cal-stat-label">Denna vecka</span>
+      <span class="cal-stat-label">${tFn('cal_stat_week')}</span>
     </div>
     <div class="cal-stat">
       <span class="cal-stat-num">${thisMonth}</span>
-      <span class="cal-stat-label">Denna månaden</span>
+      <span class="cal-stat-label">${tFn('cal_stat_month')}</span>
     </div>
     <div class="cal-stat">
       <span class="cal-stat-num">${deadlines.length}</span>
-      <span class="cal-stat-label">Totalt</span>
+      <span class="cal-stat-label">${tFn('cal_stat_total')}</span>
     </div>
   `;
 }
@@ -121,7 +134,7 @@ function renderCalendarGrid(deadlines) {
   while (grid.children.length > 7) grid.removeChild(grid.lastChild);
 
   const label = document.getElementById('cal-month-label');
-  if (label) label.textContent = `${MONTH_SV[viewMonth]} ${viewYear}`;
+  if (label) label.textContent = getMonthLabel(viewYear, viewMonth);
 
   // index deadlines and buffer dates by day string
   const byDay = {};
@@ -195,8 +208,9 @@ function renderList(deadlines) {
     .filter((d) => d.dueDate)
     .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
+  const tFn = typeof t === 'function' ? t : (k) => k;
   if (sorted.length === 0) {
-    list.innerHTML = '<p class="cal-list-empty">Inga deadlines ännu.</p>';
+    list.innerHTML = `<p class="cal-list-empty">${tFn('cal_list_empty')}</p>`;
     return;
   }
 
@@ -222,12 +236,12 @@ function renderList(deadlines) {
         <div class="cal-item-dates">
           <span class="cal-item-due">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            Deadline: ${escHtml(formatDateSv(dl.dueDate))}
+            ${tFn('cal_due_label')} ${escHtml(formatDateSv(dl.dueDate))}
           </span>
           ${bufLabel && bufLabel !== formatDateSv(dl.dueDate) ? `
           <span class="cal-item-buf">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            Agera senast: ${escHtml(bufLabel)}
+            ${tFn('cal_buf_label')} ${escHtml(bufLabel)}
           </span>` : ''}
         </div>
         ${urg ? `<span class="cal-urg ${urg.cls}">${escHtml(urg.text)}</span>` : ''}
@@ -256,8 +270,8 @@ function showDayModal(dateStr, items) {
       <div class="modal-day-sender">${escHtml(item.senderName || 'Okänd')}</div>
       <div class="modal-day-desc">${escHtml(item.description || '')}</div>
       ${item.isBuffer
-        ? `<span class="modal-day-badge buf-badge">⏰ Buffertdatum — agera nu</span>`
-        : `<span class="modal-day-badge due-badge">📅 Deadline</span>`
+        ? `<span class="modal-day-badge buf-badge">⏰ ${typeof t === 'function' ? t('cal_buf_badge') : 'Buffertdatum — agera nu'}</span>`
+        : `<span class="modal-day-badge due-badge">📅 ${typeof t === 'function' ? t('cal_due_badge') : 'Deadline'}</span>`
       }
     </div>
   `).join('');
@@ -301,7 +315,7 @@ document.getElementById('modal-backdrop')?.addEventListener('click', (e) => {
 /* ---- Clear all ---- */
 document.getElementById('cal-clear-btn')?.addEventListener('click', () => {
   if (loadDeadlines().length === 0) return;
-  if (!confirm('Ta bort alla sparade deadlines?')) return;
+  if (!confirm(typeof t === 'function' ? t('cal_clear_confirm') : 'Ta bort alla sparade deadlines?')) return;
   saveDeadlines([]);
   render();
 });
@@ -310,7 +324,7 @@ document.getElementById('cal-clear-btn')?.addEventListener('click', () => {
 function exportICS() {
   const deadlines = loadDeadlines();
   if (deadlines.length === 0) {
-    alert('Inga deadlines att exportera.');
+    alert(typeof t === 'function' ? t('cal_export_empty') : 'Inga deadlines att exportera.');
     return;
   }
 
@@ -400,22 +414,32 @@ function escHtml(s) {
   viewMonth = now.getMonth();
 
   // lang picker
-  if (typeof I18N !== 'undefined') {
+  if (typeof I18N !== 'undefined' && typeof getLang === 'function') {
     const picker = document.getElementById('lang-picker');
     if (picker) {
       Object.keys(I18N).forEach((code) => {
         const opt = document.createElement('option');
         opt.value = code;
         opt.textContent = I18N[code]._name;
+        if (code === getLang()) opt.selected = true;
         picker.appendChild(opt);
+      });
+      picker.addEventListener('change', (e) => {
+        if (typeof setLang === 'function') setLang(e.target.value);
       });
     }
   }
 
   render();
 
+  // re-render dynamic content on language change
+  document.addEventListener('langchange', () => render());
+
   // listen for storage changes from other tabs (e.g. scan page saving a new deadline)
   window.addEventListener('storage', (e) => {
     if (e.key === STORAGE_KEY) render();
   });
+
+  // apply static translations on load
+  if (typeof applyTranslations === 'function') applyTranslations();
 })();
