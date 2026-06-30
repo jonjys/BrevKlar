@@ -21,7 +21,7 @@
   --radius-sm:   10px;
   --radius:      16px;
   --radius-lg:   24px;
-  --maxw:        1060px;
+  --maxw:        1180px;
   --font:        'Inter', system-ui, -apple-system, sans-serif;
 }
 
@@ -875,7 +875,9 @@ body {
   gap: 8px;
   flex-wrap: wrap;
   justify-content: center;
-  margin-bottom: 40px;
+  margin-bottom: 32px;
+  overflow-x: auto;
+  padding-bottom: 2px;
 }
 .agency-filter-btn {
   padding: 8px 18px;
@@ -898,17 +900,17 @@ body {
 
 .agency-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
 }
 .agency-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 24px;
+  padding: 18px 20px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 .agency-card:hover {
@@ -1217,10 +1219,10 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 28px 24px 24px;
+  padding: 22px 20px 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   overflow: hidden;
   transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
 }
@@ -1419,8 +1421,8 @@ body {
 
 .hero-split {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 56px;
+  grid-template-columns: 1fr 360px;
+  gap: 48px;
   align-items: center;
 }
 
