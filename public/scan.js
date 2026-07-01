@@ -4,8 +4,8 @@ const STEPS = ['input', 'action', 'result'];
 
 const state = {
   step: 'input',
-  inputMode: 'camera', // 'camera' | 'upload' | 'url' | 'text'
-  inputData: null,     // { type: 'file', fileBase64 } | { type: 'text', textContent } | { type: 'url', url }
+  inputMode: 'camera',
+  inputData: null,
   stream: null,
 };
 
@@ -203,7 +203,7 @@ function setupDropZone() {
   });
 }
 
-/* ---------- clipboard paste (screenshots anywhere on input step) ---------- */
+/* ---------- clipboard paste ---------- */
 function setupPasteCapture() {
   document.addEventListener('paste', async (e) => {
     if (state.step !== 'input') return;
@@ -266,7 +266,6 @@ function setupUrlPanel() {
   });
 }
 
-/* Picks up ?url= query param from the landing page quick-input */
 function checkUrlParam() {
   const params = new URLSearchParams(location.search);
   const url = params.get('url');
@@ -330,6 +329,9 @@ async function runScan(action) {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
     saveScanDeadlines(data);
+    if (typeof tryScheduleNotificationsAfterAnalysis === 'function') {
+      tryScheduleNotificationsAfterAnalysis(data);
+    }
     renderScanResult(data);
   } catch {
     document.getElementById('scan-output').innerHTML =
@@ -364,13 +366,37 @@ function saveScanDeadlines(data) {
   } catch { /* ignore */ }
 }
 
+/* ---------- share ---------- */
+function shareResult(summary) {
+  const text = `📩 Analyserat av Brevklar:\n\n${summary}\n\nbrevklar.se`;
+  if (navigator.share && navigator.canShare && navigator.canShare({ text })) {
+    navigator.share({ title: 'Brevklar analys', text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => {
+      showToast('Kopierat till urklipp ✓');
+    }).catch(() => {});
+  }
+}
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'bk-toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => requestAnimationFrame(() => t.classList.add('visible')));
+  setTimeout(() => {
+    t.classList.remove('visible');
+    setTimeout(() => t.remove(), 400);
+  }, 2200);
+}
+
 /* ---------- result renderers ---------- */
 function renderScanResult(data) {
   const out = document.getElementById('scan-output');
 
   if (data.type === 'translate' || data.type === 'explain') {
     const label = data.type === 'translate' ? t('scan_translation_label') : t('scan_explanation_label');
-    out.innerHTML = `<div class="simple-result">
+    out.innerHTML = `<div class="simple-result anim-block">
       <div class="simple-result-label">${esc(label)}</div>
       <div class="simple-result-text">${esc(data.result)}</div>
     </div>`;
@@ -381,6 +407,16 @@ function renderScanResult(data) {
   }
 
   out.hidden = false;
+
+  // Animate risk/confidence bars from 0 → target
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      out.querySelectorAll('.bar-fill[data-w]').forEach((el) => {
+        el.style.width = el.dataset.w + '%';
+      });
+    }, 300);
+  });
+
   out.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -404,32 +440,32 @@ function renderDeal(data) {
     </div>`).join('');
 
   const currentCostBlock = d.currentCost ? `
-    <div class="deal-block">
+    <div class="deal-block anim-block" style="--d:80ms">
       <h3>${esc(t('deal_current_label'))}</h3>
       <div class="deal-current-cost">${esc(d.currentCost)}</div>
       ${d.contractType ? `<div class="deal-contract-type">${esc(d.contractType)}</div>` : ''}
     </div>` : '';
 
   const altBlock = altRows ? `
-    <div class="deal-block">
+    <div class="deal-block anim-block" style="--d:160ms">
       <h3>${esc(t('deal_alternatives_label'))}</h3>
       <div class="deal-alternatives">${altRows}</div>
     </div>` : '';
 
   const stepsBlock = stepRows ? `
-    <div class="deal-block">
+    <div class="deal-block anim-block" style="--d:240ms">
       <h3>${esc(t('deal_steps_label'))}</h3>
       <div class="deal-steps">${stepRows}</div>
     </div>` : '';
 
   const negotiateBlock = d.negotiationTip ? `
-    <div class="deal-block">
+    <div class="deal-block anim-block" style="--d:320ms">
       <h3>${esc(t('deal_negotiate_label'))}</h3>
       <p class="deal-negotiate">${esc(d.negotiationTip)}</p>
     </div>` : '';
 
   return `<div class="deal-result">
-    <div class="deal-hero">
+    <div class="deal-hero anim-block" style="--d:0ms">
       ${d.provider ? `<div class="deal-provider">${esc(d.provider)}</div>` : ''}
       ${d.service ? `<div class="deal-service">${esc(d.service)}</div>` : ''}
       ${d.potentialSaving ? `<div class="deal-saving-badge">⬇ ${esc(d.potentialSaving)}</div>` : ''}
@@ -439,10 +475,10 @@ function renderDeal(data) {
     ${altBlock}
     ${stepsBlock}
     ${negotiateBlock}
-    <div class="deal-block">
+    <div class="deal-block anim-block" style="--d:400ms">
       <h3>${esc(t('deal_confidence_label'))}</h3>
       <div class="deal-confidence-row">
-        <span class="bar"><span style="width:${confPct}%;background:var(--brand-hi)"></span></span>
+        <span class="bar"><span class="bar-fill" data-w="${confPct}" style="background:var(--brand-hi)"></span></span>
         <strong>${confPct}%</strong>
       </div>
     </div>
@@ -453,7 +489,7 @@ function riskBar(label, value) {
   const color = value >= 70 ? 'var(--red)' : value >= 35 ? 'var(--amber)' : 'var(--green)';
   return `<div class="risk-bar-row">
     <span>${esc(label)}</span>
-    <span class="bar"><span style="width:${value}%;background:${color}"></span></span>
+    <span class="bar"><span class="bar-fill" data-w="${value}" style="background:${color}"></span></span>
     <span>${value}</span>
   </div>`;
 }
@@ -468,22 +504,40 @@ function renderAnalysis(data) {
   const actionItems = (data.actionPlan || []).map((a) => a.step);
   const validDl = (data.deadlines || []).filter((d) => d.dueDate || d.description);
   const deadlinesHtml = validDl.length
-    ? `<div class="block"><h3>${esc(t('res_deadlines'))}</h3><ul class="deadline-list">${validDl
+    ? `<div class="block anim-block" style="--d:320ms"><h3>${esc(t('res_deadlines'))}</h3><ul class="deadline-list">${validDl
         .map((d) => `<li><span>${esc(d.description)}</span><span class="deadline-date">${esc(d.dueDate || '—')}</span></li>`)
         .join('')}</ul><a href="/calendar" class="cal-link-btn">Visa i kalender →</a></div>`
     : '';
   const confidencePct = Math.round((data.trust?.confidenceScore ?? 0) * 100);
 
+  // Priority card for high-risk documents
+  const priorityCard = r && r.score >= 65
+    ? `<div class="priority-card priority-${esc(r.level)} anim-block" style="--d:0ms">
+        <span class="priority-icon">${r.score >= 80 ? '🚨' : '⚡'}</span>
+        <div>
+          <div class="priority-label">${r.score >= 80 ? 'Kräver omedelbar åtgärd' : 'Kräver din uppmärksamhet'}</div>
+          <div class="priority-sub">Riskpoäng ${r.score}/100 ${validDl.length ? `· Deadline: ${validDl[0].dueDate || '—'}` : ''}</div>
+        </div>
+      </div>`
+    : '';
+
+  const shareIcon = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>';
+  const escapedSummary = (data.summary || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/\n/g, '\\n');
+
   return `<div class="result">
-    <div class="result-head">
+    <div class="result-head anim-block" style="--d:${priorityCard ? 80 : 0}ms">
       <div class="tags">${tags.join('')}</div>
-      ${r ? `<span class="risk-pill risk-${esc(r.level)}">${esc(t('risk_' + r.level))} · ${r.score}/100</span>` : ''}
+      <div class="result-head-right">
+        ${r ? `<span class="risk-pill risk-${esc(r.level)}">${esc(t('risk_' + r.level))} · ${r.score}/100</span>` : ''}
+        <button class="btn-share" type="button" onclick="shareResult('${escapedSummary}')" title="Dela analys">${shareIcon}</button>
+      </div>
     </div>
-    <div class="block plain"><h3>${esc(t('res_summary'))}</h3><p>${esc(data.summary)}</p></div>
-    <div class="block plain"><h3>${esc(t('res_plain'))}</h3><p>${esc(data.plainLanguage)}</p></div>
-    ${actionItems.length ? `<div class="block"><h3>${esc(t('res_action'))}</h3><ul class="action-list">${actionItems.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
+    ${priorityCard}
+    <div class="block plain anim-block" style="--d:${priorityCard ? 160 : 80}ms"><h3>${esc(t('res_summary'))}</h3><p>${esc(data.summary)}</p></div>
+    <div class="block plain anim-block" style="--d:${priorityCard ? 240 : 160}ms"><h3>${esc(t('res_plain'))}</h3><p>${esc(data.plainLanguage)}</p></div>
+    ${actionItems.length ? `<div class="block anim-block" style="--d:${priorityCard ? 320 : 240}ms"><h3>${esc(t('res_action'))}</h3><ul class="action-list">${actionItems.map((s) => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}
     ${deadlinesHtml}
-    ${r ? `<div class="block">
+    ${r ? `<div class="block anim-block" style="--d:400ms">
       <h3>${esc(t('res_risk'))}</h3>
       <div class="risk-bars">
         ${riskBar(t('res_risk_legal'), r.breakdown.legal)}
@@ -492,13 +546,13 @@ function renderAnalysis(data) {
       </div>
       ${r.needsHumanReview ? `<div class="review-flag">⚠ ${esc(t('res_review'))}</div>` : ''}
     </div>` : ''}
-    ${data.consequences ? `<div class="block"><h3>${esc(t('res_consequences'))}</h3><p>${esc(data.consequences)}</p></div>` : ''}
-    ${(data.amounts || []).length ? `<div class="block"><h3>${esc(t('res_amounts'))}</h3><div class="chips">${data.amounts.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
-    ${(data.referenceNumbers || []).length ? `<div class="block"><h3>${esc(t('res_refs'))}</h3><div class="chips">${data.referenceNumbers.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
-    <div class="block">
+    ${data.consequences ? `<div class="block anim-block" style="--d:480ms"><h3>${esc(t('res_consequences'))}</h3><p>${esc(data.consequences)}</p></div>` : ''}
+    ${(data.amounts || []).length ? `<div class="block anim-block" style="--d:560ms"><h3>${esc(t('res_amounts'))}</h3><div class="chips">${data.amounts.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
+    ${(data.referenceNumbers || []).length ? `<div class="block anim-block" style="--d:640ms"><h3>${esc(t('res_refs'))}</h3><div class="chips">${data.referenceNumbers.map((a) => `<span class="chip">${esc(a)}</span>`).join('')}</div></div>` : ''}
+    <div class="block anim-block" style="--d:720ms">
       <h3>${esc(t('res_confidence'))}</h3>
       <div class="confidence-row">
-        <span class="bar"><span style="width:${confidencePct}%;background:var(--brand)"></span></span>
+        <span class="bar" style="flex:1"><span class="bar-fill" data-w="${confidencePct}" style="background:var(--brand)"></span></span>
         <strong>${confidencePct}%</strong>
       </div>
     </div>
@@ -522,55 +576,39 @@ function init() {
   initLangPicker();
   applyTranslations();
 
-  /* Tab switching */
   document.querySelectorAll('.input-tab').forEach((tab) => {
     tab.addEventListener('click', () => setInputMode(tab.dataset.mode));
   });
 
-  /* Camera shutter */
   document.getElementById('shutter-btn').addEventListener('click', () => {
     const dataUrl = captureFromVideo();
     if (dataUrl) onInputReady({ type: 'file', fileBase64: dataUrl });
   });
 
-  /* Upload drop zone */
   setupDropZone();
-
-  /* Clipboard paste */
   setupPasteCapture();
-
-  /* URL panel */
   setupUrlPanel();
-
-  /* Text input */
   setupTextInput();
-
-  /* Pre-fill from ?url= query param (coming from landing page) */
   checkUrlParam();
 
-  /* Retake */
   document.getElementById('retake-btn').addEventListener('click', () => {
     state.inputData = null;
     goStep('input');
     if (state.inputMode === 'camera') startCamera();
   });
 
-  /* Action cards */
   document.querySelectorAll('.action-card').forEach((card) => {
     card.addEventListener('click', () => runScan(card.getAttribute('data-action')));
   });
 
-  /* Scan again */
   document.getElementById('scan-again-btn').addEventListener('click', () => {
     state.inputData = null;
     goStep('input');
     if (state.inputMode === 'camera') startCamera();
   });
 
-  /* Lang change re-applies translations */
   document.addEventListener('langchange', applyTranslations);
 
-  /* Start camera on default mode */
   startCamera();
 }
 

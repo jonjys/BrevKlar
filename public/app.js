@@ -26,7 +26,7 @@ function riskBar(label, value) {
   const color = value >= 70 ? 'var(--red)' : value >= 35 ? 'var(--amber)' : 'var(--green)';
   return `<div class="risk-bar-row">
     <span>${esc(label)}</span>
-    <span class="bar"><span style="width:${value}%;background:${color}"></span></span>
+    <span class="bar"><span class="bar-fill" data-w="${value}" style="background:${color}"></span></span>
     <span>${value}</span>
   </div>`;
 }
@@ -215,7 +215,7 @@ function renderResult(data) {
     <div class="block">
       <h3>${esc(t('res_confidence'))}</h3>
       <div class="confidence-row">
-        <span class="bar" style="flex:1"><span style="width:${confidencePct}%;background:var(--brand)"></span></span>
+        <span class="bar" style="flex:1"><span class="bar-fill" data-w="${confidencePct}" style="background:var(--brand)"></span></span>
         <strong>${confidencePct}%</strong>
       </div>
       ${(data.trust?.uncertainties || []).length ? `<ul class="steps-list" style="margin-top:12px">${data.trust.uncertainties.map((u) => `<li>${esc(u)}</li>`).join('')}</ul>` : ''}
@@ -225,6 +225,13 @@ function renderResult(data) {
   const box = document.getElementById('result');
   box.innerHTML = html;
   box.hidden = false;
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      box.querySelectorAll('.bar-fill[data-w]').forEach((el) => {
+        el.style.width = el.dataset.w + '%';
+      });
+    }, 300);
+  });
 }
 
 /* ---- analyze (text or URL) ---- */
