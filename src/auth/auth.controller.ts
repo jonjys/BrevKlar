@@ -4,6 +4,7 @@ import type { User } from '@prisma/client';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import { CollectLoginDto, StartLoginDto } from './dto/login.dto';
+import { EmailRegisterDto, EmailLoginDto } from './dto/email-auth.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
@@ -21,6 +22,18 @@ export class AuthController {
   @Post('bankid/collect')
   collect(@Body() dto: CollectLoginDto) {
     return this.auth.completeBankIdLogin(dto.orderRef);
+  }
+
+  /** E-post/lösenord: skapa konto */
+  @Post('register')
+  register(@Body() dto: EmailRegisterDto) {
+    return this.auth.registerWithEmail(dto.email, dto.password);
+  }
+
+  /** E-post/lösenord: logga in */
+  @Post('login')
+  login(@Body() dto: EmailLoginDto) {
+    return this.auth.loginWithEmail(dto.email, dto.password);
   }
 
   /** Vem är inloggad? */
