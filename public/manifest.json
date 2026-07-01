@@ -1,0 +1,31 @@
+{
+  "name": "Brevklar",
+  "short_name": "Brevklar",
+  "description": "AI-driven förklaring av myndighetsbrev — på ditt språk",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070C15",
+  "theme_color": "#2563EB",
+  "orientation": "portrait-primary",
+  "lang": "sv",
+  "icons": [
+    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Skanna brev",
+      "short_name": "Skanna",
+      "url": "/scan",
+      "description": "Analysera ett brev direkt"
+    },
+    {
+      "name": "Mina deadlines",
+      "short_name": "Deadlines",
+      "url": "/calendar",
+      "description": "Se dina kommande deadlines"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "screenshots": []
+}

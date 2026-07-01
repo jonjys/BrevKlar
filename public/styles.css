@@ -2289,3 +2289,223 @@ body {
   color: var(--text-muted);
   flex-shrink: 0;
 }
+
+/* ============================================================
+   ANIMATED BARS
+   ============================================================ */
+.bar-fill {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 3px;
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ============================================================
+   ANIMATED RESULT BLOCKS
+   ============================================================ */
+@keyframes blockIn {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.anim-block {
+  animation: blockIn 0.45s ease both;
+  animation-delay: var(--d, 0ms);
+}
+
+/* ============================================================
+   PRIORITY CARD (high-risk documents)
+   ============================================================ */
+.priority-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 20px;
+  border-radius: var(--radius);
+  margin-bottom: 4px;
+}
+.priority-card.priority-high { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); }
+.priority-card.priority-medium { background: rgba(245,158,11,0.07); border: 1px solid rgba(245,158,11,0.22); }
+.priority-icon { font-size: 22px; flex-shrink: 0; margin-top: 1px; }
+.priority-label { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.priority-sub { font-size: 12px; color: var(--text-soft); }
+
+/* ============================================================
+   SHARE BUTTON + RESULT HEAD RIGHT
+   ============================================================ */
+.result-head-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.btn-share {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-soft);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  flex-shrink: 0;
+}
+.btn-share:hover { border-color: var(--border-hi); color: var(--text); background: var(--surface-2); }
+
+/* ============================================================
+   TOAST NOTIFICATION
+   ============================================================ */
+.bk-toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: 99px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  z-index: 2000;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  pointer-events: none;
+}
+.bk-toast.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ============================================================
+   PWA INSTALL BANNER
+   ============================================================ */
+.pwa-install-banner {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 900;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--surface);
+  border-top: 1px solid var(--border-hi);
+  box-shadow: 0 -8px 32px rgba(0,0,0,0.3);
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.pwa-install-banner.visible { transform: translateY(0); }
+.pwa-install-icon { font-size: 22px; flex-shrink: 0; }
+.pwa-install-text { flex: 1; font-size: 14px; font-weight: 600; }
+.pwa-install-dismiss {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: var(--text-soft);
+  cursor: pointer;
+  padding: 4px 8px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.pwa-install-dismiss:hover { color: var(--text); }
+
+/* ============================================================
+   ONBOARDING OVERLAY
+   ============================================================ */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(7,12,21,0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+.onboarding-overlay.visible { opacity: 1; }
+
+.onboarding-panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  background: var(--surface);
+  border: 1px solid var(--border-hi);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px 28px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.55);
+  transform: translateY(24px) scale(0.97);
+  transition: transform 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+}
+.onboarding-overlay.visible .onboarding-panel { transform: translateY(0) scale(1); }
+
+.onboarding-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-soft);
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+.onboarding-close:hover { color: var(--text); background: var(--surface-2); }
+
+.onboarding-logo { margin-bottom: 20px; }
+.onboarding-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin-bottom: 8px;
+}
+.onboarding-sub {
+  font-size: 14px;
+  color: var(--text-soft);
+  margin-bottom: 28px;
+  line-height: 1.5;
+}
+
+.onboarding-steps { display: flex; flex-direction: column; gap: 16px; margin-bottom: 28px; }
+.onboarding-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+}
+.onboarding-step-icon { font-size: 24px; flex-shrink: 0; }
+.onboarding-step-text { display: flex; flex-direction: column; gap: 3px; }
+.onboarding-step-text strong { font-size: 14px; font-weight: 700; }
+.onboarding-step-text span { font-size: 12px; color: var(--text-soft); line-height: 1.4; }
+
+.onboarding-cta { width: 100%; justify-content: center; font-size: 15px; padding: 14px; margin-bottom: 12px; }
+.onboarding-skip {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+  text-align: center;
+  padding: 4px;
+  transition: color 0.15s;
+}
+.onboarding-skip:hover { color: var(--text-soft); }
+
+/* ============================================================
+   PWA STANDALONE TWEAKS
+   ============================================================ */
+@media (display-mode: standalone) {
+  .nav { padding-top: env(safe-area-inset-top, 0); }
+  .pwa-install-banner { display: none; }
+}
