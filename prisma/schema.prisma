@@ -41,6 +41,7 @@ model User {
   bankIdSubject     String?  @unique
   personalNumberHash String? @unique
   email             String?  @unique
+  passwordHash      String?  // scrypt-hash för e-post/lösenords-inloggning
   displayName       String?
 
   role UserRole         @default(USER)
